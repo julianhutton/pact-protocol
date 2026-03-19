@@ -1,0 +1,24 @@
+{
+  "name": "pact-protocol",
+  "version": "0.1.0",
+  "description": "PACT — Protocol for Agent-human Collaborative Trust",
+  "type": "module",
+  "main": "src/handoff.js",
+  "types": "src/types.ts",
+  "scripts": {
+    "test": "npx tsx test/exerciser.ts",
+    "example:quickstart": "npx tsx examples/quickstart.ts",
+    "example:deploy": "npx tsx examples/deploy-approval.ts"
+  },
+  "keywords": [
+    "ai",
+    "agents",
+    "human-in-the-loop",
+    "trust",
+    "autonomy",
+    "decision",
+    "protocol"
+  ],
+  "author": "Julian Hutton",
+  "license": "MIT"
+}
