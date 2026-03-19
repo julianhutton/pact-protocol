@@ -18,6 +18,7 @@ import type {
   DecisionSurfacedEvent,
   DecisionResolvedEvent,
   ContinuationStatus,
+  OnChainProvider,
 } from "./types.js";
 
 // ── Configuration ──
@@ -28,6 +29,7 @@ export interface PactConfig {
   patternMinDecisions?: number;
   patternApprovalThreshold?: number;
   patternLookbackMs?: number;
+  onChainProvider?: OnChainProvider;
 }
 
 const DEFAULTS = {
@@ -63,7 +65,7 @@ class TypedEmitter {
 // ── Core Protocol ──
 
 export class Pact {
-  private config: Required<PactConfig>;
+  private config: Required<Omit<PactConfig, "onChainProvider">> & Pick<PactConfig, "onChainProvider">;
   private decisions = new Map<string, Decision>();
   private agents = new Map<string, AgentTrustState>();
   private rules = new Map<string, Rule>();
@@ -217,6 +219,19 @@ export class Pact {
     // Update trust (skip snooze)
     if (input.action !== "snoozed") {
       this.updateTrust(decision.agentId, input.action);
+
+      // Fire-and-forget on-chain attestation
+      if (this.config.onChainProvider) {
+        const agent = this.getAgent(decision.agentId);
+        this.config.onChainProvider
+          .recordAttestation({
+            agentId: decision.agentId,
+            decisionId: decision.id,
+            action: input.action,
+            trustScore: agent?.trustScore ?? 0,
+          })
+          .catch((err) => console.warn("On-chain attestation failed:", err));
+      }
     }
 
     // Emit decision:resolved

@@ -1,0 +1,37 @@
+{
+  "name": "pact-protocol",
+  "version": "0.1.0",
+  "description": "PACT — Protocol for Agent-human Collaborative Trust",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "example:quickstart": "npx tsx examples/quickstart.ts",
+    "example:deploy": "npx tsx examples/deploy-approval.ts"
+  },
+  "keywords": [
+    "ai",
+    "agents",
+    "human-in-the-loop",
+    "trust",
+    "autonomy",
+    "decision",
+    "protocol"
+  ],
+  "author": "Julian Hutton",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsup": "^8.0.0",
+    "vitest": "^2.0.0",
+    "typescript": "^5.5.0"
+  }
+}
