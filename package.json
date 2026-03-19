@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "PACT — Protocol for Agent-human Collaborative Trust",
   "type": "module",
-  "main": "src/handoff.js",
+  "main": "src/pact.js",
   "types": "src/types.ts",
   "scripts": {
     "test": "npx tsx test/exerciser.ts",

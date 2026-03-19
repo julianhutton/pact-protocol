@@ -1,9 +1,9 @@
 // PACT — Quickstart
 // Full lifecycle in ~50 lines: surface → classify → resolve → learn
 
-import { HandoffProtocol } from "../src/handoff.js";
+import { Pact } from "../src/pact.js";
 
-const protocol = new HandoffProtocol({ defaultTrustScore: 40 });
+const protocol = new Pact({ defaultTrustScore: 40 });
 
 // Listen for events
 protocol.events.on("decision:surfaced", (e) => {

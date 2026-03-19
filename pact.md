@@ -504,16 +504,16 @@ Decisions about decisions. The protocol's pattern detection produces meta-decisi
 
 ## Reference Implementation
 
-The `pact-protocol` TypeScript library is the reference implementation of this spec. It provides a single `HandoffProtocol` class with in-memory storage, typed events, and configurable defaults.
+The `pact-protocol` TypeScript library is the reference implementation of this spec. It provides a single `Pact` class with in-memory storage, typed events, and configurable defaults.
 
 | Protocol Concept | Source File | Notes |
 |---|---|---|
-| Surface + Classify + Resolve | `src/handoff.ts` | `surface()`, `classify()`, `resolve()` methods |
-| Trust scoring | `src/handoff.ts` | `updateTrust()` — internal, called automatically on resolve |
-| Rule matching | `src/handoff.ts` | `checkRules()`, `matchesScope()`, specificity ordering |
-| Pattern detection | `src/handoff.ts` | `detectPatterns()`, `surfaceMetaDecision()`, `createRuleFromMetaDecision()` |
-| Continuations | `src/handoff.ts` | `createContinuation()`, `resumeContinuation()` |
-| Event bus + payloads | `src/handoff.ts` | `TypedEmitter` wrapping Node.js `EventEmitter` |
+| Surface + Classify + Resolve | `src/pact.ts` | `surface()`, `classify()`, `resolve()` methods |
+| Trust scoring | `src/pact.ts` | `updateTrust()` — internal, called automatically on resolve |
+| Rule matching | `src/pact.ts` | `checkRules()`, `matchesScope()`, specificity ordering |
+| Pattern detection | `src/pact.ts` | `detectPatterns()`, `surfaceMetaDecision()`, `createRuleFromMetaDecision()` |
+| Continuations | `src/pact.ts` | `createContinuation()`, `resumeContinuation()` |
+| Event bus + payloads | `src/pact.ts` | `TypedEmitter` wrapping Node.js `EventEmitter` |
 | Data models + types | `src/types.ts` | `Decision`, `AgentTrustState`, `Rule`, `Continuation`, `EventMap` |
 
 ### Implementation Notes

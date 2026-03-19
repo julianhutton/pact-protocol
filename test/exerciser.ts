@@ -1,6 +1,6 @@
-// Handoff Protocol Exerciser — tests all spec requirements
+// PACT Exerciser — tests all spec requirements
 
-import { HandoffProtocol } from "../src/handoff.js";
+import { Pact } from "../src/pact.js";
 import type { Decision, Stakes, TrustLevel } from "../src/types.js";
 
 let passed = 0;
@@ -21,7 +21,7 @@ function section(name: string): void {
 }
 
 function makeDecision(
-  hp: HandoffProtocol,
+  hp: Pact,
   agentId: string,
   stakes: Stakes,
   scope: Record<string, string> = { goal: "test", category: "exercise" }
@@ -59,7 +59,7 @@ const matrixTests: { trust: number; level: TrustLevel; stakes: Stakes; expected:
 ];
 
 for (const t of matrixTests) {
-  const hp = new HandoffProtocol({ defaultTrustScore: t.trust });
+  const hp = new Pact({ defaultTrustScore: t.trust });
   const d = makeDecision(hp, "agent-1", t.stakes);
 
   if (t.expected === "auto-approve") {
@@ -81,7 +81,7 @@ section("Trust Scoring");
 
 {
   // Start at 20 (supervised, boundary)
-  const hp = new HandoffProtocol({ defaultTrustScore: 20 });
+  const hp = new Pact({ defaultTrustScore: 20 });
   const agent = hp.getOrCreateAgent("trust-test");
   assert(agent.trustLevel === "supervised", "Score 20 is supervised (boundary)");
 
@@ -117,7 +117,7 @@ section("Trust Scoring");
 
 // Boundary at 50
 {
-  const hp = new HandoffProtocol({ defaultTrustScore: 50 });
+  const hp = new Pact({ defaultTrustScore: 50 });
   const agent = hp.getOrCreateAgent("boundary-50");
   assert(agent.trustLevel === "guided", "Score 50 is guided (boundary)");
 
@@ -130,7 +130,7 @@ section("Trust Scoring");
 
 // Clamp at 0
 {
-  const hp = new HandoffProtocol({ defaultTrustScore: 2 });
+  const hp = new Pact({ defaultTrustScore: 2 });
   const d = makeDecision(hp, "clamp-test", "medium");
   hp.resolve({ decisionId: d.id, action: "rejected" });
   const a = hp.getAgent("clamp-test")!;
@@ -139,7 +139,7 @@ section("Trust Scoring");
 
 // Clamp at 100
 {
-  const hp = new HandoffProtocol({ defaultTrustScore: 99 });
+  const hp = new Pact({ defaultTrustScore: 99 });
   const d = makeDecision(hp, "clamp-max", "high");
   hp.resolve({ decisionId: d.id, action: "approved" });
   const a = hp.getAgent("clamp-max")!;
@@ -153,7 +153,7 @@ section("Trust Scoring");
 section("Rule Matching");
 
 {
-  const hp = new HandoffProtocol({ defaultTrustScore: 10 }); // supervised
+  const hp = new Pact({ defaultTrustScore: 10 }); // supervised
 
   // Add rules with different specificity
   hp.addRule({
@@ -183,7 +183,7 @@ section("Rule Matching");
 
 // Always-request wins ties at same specificity
 {
-  const hp = new HandoffProtocol({ defaultTrustScore: 10 });
+  const hp = new Pact({ defaultTrustScore: 10 });
 
   hp.addRule({
     type: "auto-approve",
@@ -202,7 +202,7 @@ section("Rule Matching");
 
 // Rule overrides classification matrix
 {
-  const hp = new HandoffProtocol({ defaultTrustScore: 10 }); // supervised
+  const hp = new Pact({ defaultTrustScore: 10 }); // supervised
   hp.addRule({
     type: "auto-approve",
     scope: { category: "routine" },
@@ -231,7 +231,7 @@ section("Pattern Detection");
 
 // Edited counts as approval
 {
-  const hp = new HandoffProtocol({
+  const hp = new Pact({
     defaultTrustScore: 10,
     patternMinDecisions: 5,
     patternApprovalThreshold: 0.8,
@@ -255,7 +255,7 @@ section("Pattern Detection");
 
 // Zero rejections required
 {
-  const hp = new HandoffProtocol({
+  const hp = new Pact({
     defaultTrustScore: 10,
     patternMinDecisions: 5,
     patternApprovalThreshold: 0.8,
@@ -279,7 +279,7 @@ section("Pattern Detection");
 
 // Meta-decisions excluded from pattern detection
 {
-  const hp = new HandoffProtocol({
+  const hp = new Pact({
     defaultTrustScore: 10,
     patternMinDecisions: 3,
     patternApprovalThreshold: 0.8,
@@ -315,7 +315,7 @@ section("Pattern Detection");
 section("Auto-approve Flow");
 
 {
-  const hp = new HandoffProtocol({
+  const hp = new Pact({
     defaultTrustScore: 10,
     patternMinDecisions: 5,
     patternApprovalThreshold: 0.8,
@@ -361,7 +361,7 @@ section("Auto-approve Flow");
 section("Continuations");
 
 {
-  const hp = new HandoffProtocol({
+  const hp = new Pact({
     defaultTrustScore: 10,
     continuationExpiryMs: 24 * 60 * 60 * 1000,
   });
@@ -395,7 +395,7 @@ section("Continuations");
 
 // Expiration
 {
-  const hp = new HandoffProtocol({
+  const hp = new Pact({
     defaultTrustScore: 10,
     continuationExpiryMs: 100, // 100ms for testing
   });
@@ -423,7 +423,7 @@ section("Continuations");
 section("Events");
 
 {
-  const hp = new HandoffProtocol({ defaultTrustScore: 10 });
+  const hp = new Pact({ defaultTrustScore: 10 });
 
   let surfacedCount = 0;
   let resolvedCount = 0;
@@ -446,7 +446,7 @@ section("Events");
   assert(resolvedCount === 1, "decision:resolved emitted on resolve");
 
   // Auto-approved decisions also emit surfaced
-  const hp2 = new HandoffProtocol({ defaultTrustScore: 75 });
+  const hp2 = new Pact({ defaultTrustScore: 75 });
   let autoSurfaced = 0;
   hp2.events.on("decision:surfaced", () => autoSurfaced++);
   makeDecision(hp2, "auto-agent", "low"); // autonomous + low = auto-approve

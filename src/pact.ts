@@ -1,4 +1,4 @@
-// Handoff Protocol v0.1 — Implementation
+// PACT v0.1 — Reference Implementation
 
 import { EventEmitter } from "node:events";
 import { randomUUID } from "node:crypto";
@@ -22,7 +22,7 @@ import type {
 
 // ── Configuration ──
 
-export interface HandoffConfig {
+export interface PactConfig {
   defaultTrustScore?: number;
   continuationExpiryMs?: number;
   patternMinDecisions?: number;
@@ -62,8 +62,8 @@ class TypedEmitter {
 
 // ── Core Protocol ──
 
-export class HandoffProtocol {
-  private config: Required<HandoffConfig>;
+export class Pact {
+  private config: Required<PactConfig>;
   private decisions = new Map<string, Decision>();
   private agents = new Map<string, AgentTrustState>();
   private rules = new Map<string, Rule>();
@@ -71,7 +71,7 @@ export class HandoffProtocol {
 
   public events = new TypedEmitter();
 
-  constructor(config: HandoffConfig = {}) {
+  constructor(config: PactConfig = {}) {
     this.config = { ...DEFAULTS, ...config };
   }
 

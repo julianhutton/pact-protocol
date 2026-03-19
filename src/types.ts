@@ -1,4 +1,4 @@
-// Handoff Protocol v0.1 — Type Definitions
+// PACT v0.1 — Type Definitions
 
 export type Stakes = "high" | "medium" | "low";
 export type Urgency = "inform" | "request" | "blocked";

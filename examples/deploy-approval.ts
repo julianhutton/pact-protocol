@@ -3,9 +3,9 @@
 // based on stakes and trust, learns from approval patterns, and discovers
 // the principal's boundaries when they push back.
 
-import { HandoffProtocol } from "../src/handoff.js";
+import { Pact } from "../src/pact.js";
 
-const protocol = new HandoffProtocol({ defaultTrustScore: 30 });
+const protocol = new Pact({ defaultTrustScore: 30 });
 
 const log = (msg: string) => console.log(`  ${msg}`);
 const heading = (msg: string) => console.log(`\n━━ ${msg} ━━`);

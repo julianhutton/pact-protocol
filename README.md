@@ -2,16 +2,16 @@
 
 **Protocol for Agent-human Collaborative Trust**
 
-An open protocol for agent→human handoff in autonomous systems.
+An open protocol for agent→human decision delegation in autonomous systems.
 
 PACT defines how AI agents surface decisions to human principals, how those decisions get classified and routed based on stakes and trust, and how the system learns from the principal's responses over time. It's designed for systems where the human steers and the AI rows — not full autonomy, not chat-based prompting, but the collaborative middle ground.
 
 ## Quickstart
 
 ```typescript
-import { HandoffProtocol } from "pact-protocol";
+import { Pact } from "pact-protocol";
 
-const protocol = new HandoffProtocol({ defaultTrustScore: 40 });
+const protocol = new Pact({ defaultTrustScore: 40 });
 
 // Surface a decision
 const decision = protocol.surface({
