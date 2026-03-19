@@ -144,3 +144,13 @@ export interface EventMap {
   "decision:surfaced": DecisionSurfacedEvent;
   "decision:resolved": DecisionResolvedEvent;
 }
+
+// On-chain provider interface (zero blockchain dependencies)
+export interface OnChainProvider {
+  recordAttestation(params: {
+    agentId: string;
+    decisionId: string;
+    action: string;
+    trustScore: number;
+  }): Promise<{ txHash: string }>;
+}

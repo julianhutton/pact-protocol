@@ -1,0 +1,22 @@
+{
+  "name": "pact-onchain",
+  "version": "0.1.0",
+  "description": "PACT on-chain trust attestations on Base Sepolia",
+  "type": "commonjs",
+  "scripts": {
+    "build": "hardhat compile",
+    "test": "hardhat test",
+    "deploy": "hardhat run scripts/deploy.ts --network baseSepolia"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox-viem": "^3.0.0",
+    "chai": "^5.0.0",
+    "hardhat": "^2.22.0",
+    "typescript": "^5.5.0",
+    "ts-node": "^10.9.0",
+    "@types/node": "^22.0.0"
+  },
+  "dependencies": {
+    "viem": "^2.0.0"
+  }
+}
