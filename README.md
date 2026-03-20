@@ -1,12 +1,12 @@
-<p align="center">
-  <h1 align="center">PACT</h1>
-  <p align="center">
+<p>
+  <h1>PACT</h1>
+  <p>
     <strong>Protocol for Agent-human Collaborative Trust</strong>
   </p>
-  <p align="center">
+  <p>
     A lightweight protocol that lets AI agents earn autonomy through human feedback — with trust recorded onchain.
   </p>
-  <p align="center">
+  <p>
     <a href="https://basescan.org/address/0x6c867dd49a3fc66b9c487d03bafb05210ed15e52"><img src="https://img.shields.io/badge/Base_Mainnet-live-blue" alt="Base Mainnet"></a>
     <a href="./pact.md"><img src="https://img.shields.io/badge/spec-v0.1-green" alt="Spec v0.1"></a>
     <img src="https://img.shields.io/badge/tests-43_passing-brightgreen" alt="43 tests passing">
