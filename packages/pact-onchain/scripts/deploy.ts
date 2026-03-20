@@ -1,16 +1,21 @@
 import hre from "hardhat";
 
 async function main() {
-  console.log("Deploying TrustAttestation to", hre.network.name, "...");
+  const contractName = process.env.CONTRACT_NAME ?? "TrustAttestation";
+  console.log(`Deploying ${contractName} to ${hre.network.name}...`);
 
-  const contract = await hre.viem.deployContract("TrustAttestation");
+  const contract = await hre.viem.deployContract(contractName);
 
-  console.log("TrustAttestation deployed to:", contract.address);
+  console.log(`${contractName} deployed to:`, contract.address);
 
-  if (hre.network.name === "baseSepolia") {
-    console.log(
-      `Explorer: https://sepolia.basescan.org/address/${contract.address}`
-    );
+  const explorerUrls: Record<string, string> = {
+    baseSepolia: "https://sepolia.basescan.org",
+    base: "https://basescan.org",
+  };
+
+  const explorer = explorerUrls[hre.network.name];
+  if (explorer) {
+    console.log(`Explorer: ${explorer}/address/${contract.address}`);
   }
 }
 
