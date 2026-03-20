@@ -2,14 +2,16 @@
 
 AI agents make thousands of decisions. Most are fine. Some are not. PACT is a lightweight protocol that lets agents surface decisions to humans based on stakes and earned trust — then learn from each interaction to get better over time.
 
-Optionally, trust attestations can be recorded on-chain (Base Sepolia) so other agents can verify an agent's track record without trusting a central authority.
+Trust attestations are recorded on-chain (Base) so other agents can verify an agent's track record without trusting a central authority.
 
 ## How it works
 
 ```
 Agent → Surface decision → Classify (stakes × trust) → Human resolves → Trust updates
                                                                               ↓
-                                                              On-chain attestation (optional)
+                                                              On-chain attestation (Base)
+                                                                              ↓
+                                                              Other agents verify trust
 ```
 
 **Classification matrix** — 9 cells mapping trust level × stakes to urgency:
@@ -23,52 +25,90 @@ Agent → Surface decision → Classify (stakes × trust) → Human resolves →
 **Trust scoring** — Agents earn trust through consistent good decisions:
 - Approved: +2 | Edited: +1 | Rejected: -5
 
-**On-chain attestations** — Record trust decisions on Base Sepolia so other agents can call `verifyTrust()` to check an agent's track record.
+**Pattern detection** — When the same type of decision is approved repeatedly, PACT surfaces a meta-decision: "Should this be auto-approved going forward?" The principal stays in control of what gets automated.
+
+**On-chain contracts (Base Mainnet)**:
+- **TrustAttestation** — Records approval/rejection attestations with trust scores. Any agent can call `verifyTrust(agentId, minScore)` to check another agent's track record.
+- **AgentRegistry** — On-chain agent identity. Agents register with a name and description, queryable by any other agent.
+
+## Live contracts
+
+| Contract | Address | Explorer |
+|----------|---------|----------|
+| TrustAttestation | `0x6c867dd49a3fc66b9c487d03bafb05210ed15e52` | [basescan](https://basescan.org/address/0x6c867dd49a3fc66b9c487d03bafb05210ed15e52) |
+| AgentRegistry | `0x0a1485ac5079a505ac9843f28d7c269a4b37a548` | [basescan](https://basescan.org/address/0x0a1485ac5079a505ac9843f28d7c269a4b37a548) |
+
+Network: **Base Mainnet** (Chain ID 8453)
 
 ## Quick start
 
 ```bash
 bun install
-bun run --filter pact-protocol build
-bun run --filter pact-protocol test
+bun run --filter pact-protocol test       # 33 protocol tests
+bun run --filter pact-onchain test        # 10 on-chain tests
 ```
 
-## Demo
+## Examples
+
+```bash
+# Quickstart — full lifecycle in ~50 lines
+bun run --filter pact-protocol example:quickstart
+
+# Deploy approval — CI/CD agent earning trust, pattern detection, meta-decisions
+bun run --filter pact-protocol example:deploy
+
+# Multi-agent trust — orchestrator ranks workers by trust, delegates tasks
+bun run --filter pact-protocol example:multi-agent
+
+# Trading agent — classification matrix, risk thresholds, learned auto-approve rules
+bun run --filter pact-protocol example:trading
+```
+
+## Demo (with on-chain)
 
 ```bash
 # Dry-run (no blockchain required)
 bun run scripts/demo.ts
 
-# Live on-chain (requires Base Sepolia)
-DEPLOYER_KEY=0x... CONTRACT_ADDRESS=0x... bun run scripts/demo.ts
+# Live on Base Mainnet
+DEPLOYER_KEY=0x... \
+  TRUST_CONTRACT=0x6c867dd49a3fc66b9c487d03bafb05210ed15e52 \
+  REGISTRY_CONTRACT=0x0a1485ac5079a505ac9843f28d7c269a4b37a548 \
+  NETWORK=mainnet \
+  bun run scripts/demo.ts
 ```
 
-## Deploy contract
+The demo registers agents on-chain, surfaces a high-stakes deploy decision, records the trust attestation on Base, and has a second agent verify trust permissionlessly.
+
+## Deploy your own contracts
 
 ```bash
 cd packages/pact-onchain
-DEPLOYER_KEY=0x... bun run deploy
-```
 
-Contract address: _(fill after deploy)_
+# TrustAttestation
+DEPLOYER_KEY=0x... CONTRACT_NAME=TrustAttestation npx hardhat run scripts/deploy.ts --network base
+
+# AgentRegistry
+DEPLOYER_KEY=0x... CONTRACT_NAME=AgentRegistry npx hardhat run scripts/deploy.ts --network base
+```
 
 ## Monorepo layout
 
 ```
 ├── packages/
-│   ├── pact-protocol/     # Core protocol (zero blockchain deps)
-│   │   ├── src/           # Pact class, types, OnChainProvider interface
-│   │   ├── test/          # Vitest tests (33 tests)
-│   │   └── examples/      # Quickstart + deploy-approval examples
-│   └── pact-onchain/      # Base Sepolia trust attestations
-│       ├── contracts/     # TrustAttestation.sol
-│       ├── src/           # BaseTrustProvider, ABI
-│       ├── test/          # Hardhat tests
-│       └── scripts/       # Deploy script
+│   ├── pact-protocol/        # Core protocol (zero blockchain deps)
+│   │   ├── src/              # Pact class, types, OnChainProvider interface
+│   │   ├── test/             # 33 Vitest tests
+│   │   └── examples/         # 4 runnable examples
+│   └── pact-onchain/         # Base on-chain contracts + providers
+│       ├── contracts/        # TrustAttestation.sol, AgentRegistry.sol
+│       ├── src/              # BaseTrustProvider, AgentRegistryProvider, ABIs
+│       ├── test/             # 10 Hardhat tests
+│       └── scripts/          # Deploy script
 ├── scripts/
-│   └── demo.ts            # Full protocol + on-chain demo
-├── pact.md                # PACT v0.1 specification
-└── ROADMAP.md             # Project roadmap
+│   └── demo.ts               # Full protocol + on-chain demo
+├── pact.md                   # PACT v0.1 specification
+└── ROADMAP.md                # Project roadmap
 ```
 
 ## Spec
