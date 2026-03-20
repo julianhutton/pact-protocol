@@ -4,7 +4,7 @@
     <strong>Protocol for Agent-human Collaborative Trust</strong>
   </p>
   <p align="center">
-    A lightweight protocol that lets AI agents earn autonomy through human feedback — with trust recorded on-chain.
+    A lightweight protocol that lets AI agents earn autonomy through human feedback — with trust recorded onchain.
   </p>
   <p align="center">
     <a href="https://basescan.org/address/0x6c867dd49a3fc66b9c487d03bafb05210ed15e52"><img src="https://img.shields.io/badge/Base_Mainnet-live-blue" alt="Base Mainnet"></a>
@@ -25,7 +25,7 @@ Trust attestations are recorded on [Base](https://base.org) so any agent can ver
 ```
 Agent surfaces decision → Classify (stakes × trust) → Human resolves → Trust updates
                                                                             ↓
-                                                            On-chain attestation (Base)
+                                                            Onchain attestation (Base)
                                                                             ↓
                                                             Other agents verify trust
 ```
@@ -54,7 +54,7 @@ Agents earn trust through consistent good judgment. The asymmetry is intentional
 
 When the same type of decision is approved repeatedly, PACT surfaces a **meta-decision**: *"Should this be auto-approved going forward?"* The human always decides what gets automated.
 
-### On-chain contracts
+### Onchain contracts
 
 | Contract | Address | Basescan |
 |----------|---------|:--------:|
@@ -62,7 +62,7 @@ When the same type of decision is approved repeatedly, PACT surfaces a **meta-de
 | **AgentRegistry** | `0x0a1485ac5079a505ac9843f28d7c269a4b37a548` | [View](https://basescan.org/address/0x0a1485ac5079a505ac9843f28d7c269a4b37a548) |
 
 - **TrustAttestation** — Records approval/rejection attestations with trust scores. Any agent can call `verifyTrust(agentId, minScore)` to check another agent's track record.
-- **AgentRegistry** — On-chain agent identity. Agents register with a name and description, queryable by any other agent.
+- **AgentRegistry** — Onchain agent identity. Agents register with a name and description, queryable by any other agent.
 
 > Network: **Base Mainnet** (Chain ID 8453)
 
@@ -74,7 +74,7 @@ bun install
 
 # Run all tests
 bun run --filter pact-protocol test       # 33 protocol tests
-bun run --filter pact-onchain test        # 10 on-chain tests (via Hardhat)
+bun run --filter pact-onchain test        # 10 onchain tests (via Hardhat)
 ```
 
 ## Examples
@@ -98,9 +98,9 @@ bun run --filter pact-protocol example:trading
 > [!TIP]
 > Each example is self-contained and runs entirely in-memory — no blockchain or API keys needed.
 
-## Demo (with on-chain)
+## Demo (with onchain)
 
-The demo script exercises the full protocol flow including on-chain interactions:
+The demo script exercises the full protocol flow including onchain interactions:
 
 ```bash
 # Dry-run (no blockchain required)
@@ -114,7 +114,7 @@ DEPLOYER_KEY=0x... \
   bun run scripts/demo.ts
 ```
 
-In live mode, the demo registers agents on-chain, surfaces a high-stakes deploy decision, records the trust attestation on Base, and has a second agent verify trust permissionlessly.
+In live mode, the demo registers agents onchain, surfaces a high-stakes deploy decision, records the trust attestation on Base, and has a second agent verify trust permissionlessly.
 
 ## Architecture
 
@@ -124,14 +124,14 @@ packages/
 │   ├── src/                 Pact class, types, OnChainProvider interface
 │   ├── test/                33 Vitest tests
 │   └── examples/            4 runnable examples
-└── pact-onchain/            Base on-chain contracts + TypeScript providers
+└── pact-onchain/            Base onchain contracts + TypeScript providers
     ├── contracts/           TrustAttestation.sol, AgentRegistry.sol
     ├── src/                 BaseTrustProvider, AgentRegistryProvider, ABIs
     ├── test/                10 Hardhat tests
     └── scripts/             Deploy script
 
 scripts/
-└── demo.ts                  Full protocol + on-chain demo
+└── demo.ts                  Full protocol + onchain demo
 ```
 
 The protocol core (`pact-protocol`) has **zero blockchain dependencies** — it defines an `OnChainProvider` interface that `pact-onchain` implements for Base. You can use PACT purely in-memory, or plug in your own chain.
@@ -147,7 +147,7 @@ The protocol core (`pact-protocol`) has **zero blockchain dependencies** — it 
 | **Vitest** | Protocol unit tests |
 | **tsup** | Build & bundling |
 | **Bun** | Runtime & package manager |
-| **Base** | L2 chain for on-chain trust |
+| **Base** | L2 chain for onchain trust |
 
 ## Deploy your own contracts
 
