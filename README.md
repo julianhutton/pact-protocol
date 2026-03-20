@@ -14,7 +14,6 @@
   </p>
 </p>
 
----
 
 AI agents make thousands of decisions. Most are fine. Some are not. PACT gives agents a structured way to surface decisions to humans based on **stakes** and **earned trust** — then learn from each interaction to calibrate autonomy over time.
 
