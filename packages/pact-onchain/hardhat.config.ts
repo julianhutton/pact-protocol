@@ -8,6 +8,10 @@ const config: HardhatUserConfig = {
       url: process.env.BASE_SEPOLIA_RPC ?? "https://sepolia.base.org",
       accounts: process.env.DEPLOYER_KEY ? [process.env.DEPLOYER_KEY] : [],
     },
+    base: {
+      url: process.env.BASE_RPC ?? "https://mainnet.base.org",
+      accounts: process.env.DEPLOYER_KEY ? [process.env.DEPLOYER_KEY] : [],
+    },
   },
 };
 

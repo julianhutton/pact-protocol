@@ -1,12 +1,13 @@
 {
   "name": "pact-onchain",
   "version": "0.1.0",
-  "description": "PACT on-chain trust attestations on Base Sepolia",
+  "description": "PACT on-chain trust attestations and agent registry on Base",
   "type": "commonjs",
   "scripts": {
     "build": "hardhat compile",
     "test": "hardhat test",
-    "deploy": "hardhat run scripts/deploy.ts --network baseSepolia"
+    "deploy": "hardhat run scripts/deploy.ts --network baseSepolia",
+    "deploy:mainnet": "hardhat run scripts/deploy.ts --network base"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox-viem": "^3.0.0",
