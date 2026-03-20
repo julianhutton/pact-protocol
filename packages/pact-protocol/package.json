@@ -15,7 +15,9 @@
     "build": "tsup",
     "test": "vitest run",
     "example:quickstart": "npx tsx examples/quickstart.ts",
-    "example:deploy": "npx tsx examples/deploy-approval.ts"
+    "example:deploy": "npx tsx examples/deploy-approval.ts",
+    "example:multi-agent": "npx tsx examples/multi-agent-trust.ts",
+    "example:trading": "npx tsx examples/trading-agent.ts"
   },
   "keywords": [
     "ai",
