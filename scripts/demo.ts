@@ -2,13 +2,16 @@
 //
 // Usage:
 //   bun run scripts/demo.ts                          # dry-run (no on-chain)
-//   DEPLOYER_KEY=0x... CONTRACT_ADDRESS=0x... bun run scripts/demo.ts  # live on-chain
+//   DEPLOYER_KEY=0x... TRUST_CONTRACT=0x... REGISTRY_CONTRACT=0x... bun run scripts/demo.ts              # live on-chain (Base Sepolia)
+//   DEPLOYER_KEY=0x... TRUST_CONTRACT=0x... REGISTRY_CONTRACT=0x... NETWORK=mainnet bun run scripts/demo.ts  # live on-chain (Base Mainnet)
 
 import { Pact } from "../packages/pact-protocol/src/pact.js";
 import type { OnChainProvider } from "../packages/pact-protocol/src/types.js";
 
 const DEPLOYER_KEY = process.env.DEPLOYER_KEY as `0x${string}` | undefined;
-const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS as `0x${string}` | undefined;
+const TRUST_CONTRACT = process.env.TRUST_CONTRACT as `0x${string}` | undefined;
+const REGISTRY_CONTRACT = process.env.REGISTRY_CONTRACT as `0x${string}` | undefined;
+const NETWORK = process.env.NETWORK ?? "sepolia";
 
 const log = (msg: string) => console.log(`  ${msg}`);
 const heading = (msg: string) => console.log(`\n━━ ${msg} ━━`);
@@ -19,31 +22,105 @@ async function main() {
   console.log("║  Collaborative Trust                        ║");
   console.log("╚══════════════════════════════════════════════╝");
 
-  // Optionally set up on-chain provider
-  let onChainProvider: OnChainProvider | undefined;
+  const isMainnet = NETWORK === "mainnet";
+  const rpcUrl = isMainnet ? "https://mainnet.base.org" : "https://sepolia.base.org";
+  const explorerBase = isMainnet ? "https://basescan.org" : "https://sepolia.basescan.org";
 
-  if (DEPLOYER_KEY && CONTRACT_ADDRESS) {
-    heading("On-chain mode: Base Sepolia");
-    log(`Contract: ${CONTRACT_ADDRESS}`);
+  // Optionally set up on-chain providers
+  let onChainProvider: OnChainProvider | undefined;
+  let trustProvider: any;
+  let registryProvider: any;
+
+  const hasOnChain = DEPLOYER_KEY && TRUST_CONTRACT;
+
+  if (hasOnChain) {
+    heading(`On-chain mode: Base ${isMainnet ? "Mainnet" : "Sepolia"}`);
+    log(`Trust contract: ${TRUST_CONTRACT}`);
+    if (REGISTRY_CONTRACT) log(`Registry contract: ${REGISTRY_CONTRACT}`);
 
     const { BaseTrustProvider } = await import("../packages/pact-onchain/src/BaseTrustProvider.js");
-    const provider = new BaseTrustProvider({
-      contractAddress: CONTRACT_ADDRESS,
-      privateKey: DEPLOYER_KEY,
+    const { base, baseSepolia } = await import("../packages/pact-onchain/src/index.js");
+    const chain = isMainnet ? base : baseSepolia;
+
+    trustProvider = new BaseTrustProvider({
+      contractAddress: TRUST_CONTRACT!,
+      privateKey: DEPLOYER_KEY!,
+      rpcUrl,
+      chain,
     });
-    onChainProvider = provider;
-    log("BaseTrustProvider initialized");
+    onChainProvider = trustProvider;
+
+    if (REGISTRY_CONTRACT) {
+      const { AgentRegistryProvider } = await import("../packages/pact-onchain/src/AgentRegistryProvider.js");
+      registryProvider = new AgentRegistryProvider({
+        contractAddress: REGISTRY_CONTRACT,
+        privateKey: DEPLOYER_KEY!,
+        rpcUrl,
+        chain,
+      });
+    }
+
+    log("Providers initialized");
   } else {
     heading("Dry-run mode (no on-chain)");
-    log("Set DEPLOYER_KEY and CONTRACT_ADDRESS env vars for live on-chain demo");
+    log("Set DEPLOYER_KEY and TRUST_CONTRACT env vars for live on-chain demo");
+    log("Optionally set REGISTRY_CONTRACT for agent registry demo");
+    log("Set NETWORK=mainnet for Base mainnet (default: sepolia)");
   }
 
-  // ── Step 1: Create Pact instance and surface a decision ──
+  // ── Step 1: Register agents on-chain ──
 
-  heading("Step 1: Surface a high-stakes decision");
+  if (registryProvider) {
+    heading("Step 1: Register agents on-chain");
+
+    try {
+      const isRegistered = await registryProvider.isRegistered("deploy-bot");
+      if (!isRegistered) {
+        const { txHash } = await registryProvider.registerAgent({
+          agentId: "deploy-bot",
+          name: "Deploy Bot",
+          description: "CI/CD agent that handles production deployments",
+        });
+        log(`Registered deploy-bot: ${explorerBase}/tx/${txHash}`);
+      } else {
+        log("deploy-bot already registered on-chain");
+      }
+    } catch (err: any) {
+      log(`Registration: ${err.message?.includes("already registered") ? "already registered" : err.message}`);
+    }
+
+    // Small delay to avoid nonce conflicts on Base free RPC
+    await new Promise((r) => setTimeout(r, 3000));
+
+    try {
+      const isRegistered = await registryProvider.isRegistered("orchestrator");
+      if (!isRegistered) {
+        const { txHash } = await registryProvider.registerAgent({
+          agentId: "orchestrator",
+          name: "Orchestrator Agent",
+          description: "Coordinates tasks across agents, verifies trust",
+        });
+        log(`Registered orchestrator: ${explorerBase}/tx/${txHash}`);
+      } else {
+        log("orchestrator already registered on-chain");
+      }
+    } catch (err: any) {
+      log(`Registration: ${err.message?.includes("already registered") ? "already registered" : err.message}`);
+    }
+
+    const count = await registryProvider.getAgentCount();
+    log(`Total agents registered on-chain: ${count}`);
+  } else {
+    heading("Step 1: Agent registration (skipped — dry run)");
+    log("In live mode, agents register on-chain with AgentRegistry contract.");
+  }
+
+  // ── Step 2: Surface a high-stakes decision ──
+
+  heading("Step 2: Surface a high-stakes decision");
 
   const protocol = new Pact({
-    defaultTrustScore: 30, // New agent, starts in guided trust
+    defaultTrustScore: 30,
     onChainProvider,
   });
 
@@ -68,9 +145,9 @@ async function main() {
     ],
   });
 
-  // ── Step 2: Show classification ──
+  // ── Step 3: Show classification ──
 
-  heading("Step 2: Classification result");
+  heading("Step 3: Classification result");
 
   const agent = protocol.getAgent("deploy-bot")!;
   const preTrustScore = agent.trustScore;
@@ -80,9 +157,9 @@ async function main() {
   log(`Status: ${decision.status}`);
   log(`→ Blocked — high stakes with a guided-trust agent.`);
 
-  // ── Step 3: Principal approves ──
+  // ── Step 4: Principal approves ──
 
-  heading("Step 3: Principal approves");
+  heading("Step 4: Principal approves");
 
   const resolved = protocol.resolve({
     decisionId: decision.id,
@@ -92,61 +169,74 @@ async function main() {
   log(`Action: ${resolved.resolution!.action}`);
   log(`Note: "${resolved.resolution!.note}"`);
 
-  // ── Step 4: Trust score update ──
+  // ── Step 5: Trust score update ──
 
-  heading("Step 4: Trust score updated");
+  heading("Step 5: Trust score updated");
 
   const updated = protocol.getAgent("deploy-bot")!;
   log(`Trust: ${preTrustScore} → ${updated.trustScore} (+2 for approval)`);
   log(`Level: ${updated.trustLevel}`);
   log(`Approved: ${updated.approvedCount}, Rejected: ${updated.rejectedCount}`);
 
-  // ── Step 5: On-chain attestation (if configured) ──
+  // ── Step 6: On-chain attestation ──
 
-  if (onChainProvider && DEPLOYER_KEY && CONTRACT_ADDRESS) {
-    heading("Step 5: On-chain attestation");
+  if (hasOnChain) {
+    heading("Step 6: On-chain trust attestation");
 
-    // Wait a moment for the fire-and-forget to complete
-    await new Promise((r) => setTimeout(r, 3000));
+    // Wait for fire-and-forget to complete
+    await new Promise((r) => setTimeout(r, 5000));
 
-    const { BaseTrustProvider } = await import("../packages/pact-onchain/src/BaseTrustProvider.js");
-    const reader = new BaseTrustProvider({
-      contractAddress: CONTRACT_ADDRESS,
-      privateKey: DEPLOYER_KEY,
-    });
-
-    const onChainScore = await reader.getTrustScore("deploy-bot");
+    const onChainScore = await trustProvider.getTrustScore("deploy-bot");
     log(`On-chain trust score for deploy-bot: ${onChainScore}`);
 
-    const trusted = await reader.verifyTrust("deploy-bot", 30);
+    const trusted = await trustProvider.verifyTrust("deploy-bot", 30);
     log(`Meets threshold (30)? ${trusted}`);
+    log(`Explorer: ${explorerBase}/address/${TRUST_CONTRACT}`);
 
-    log(`Explorer: https://sepolia.basescan.org/address/${CONTRACT_ADDRESS}`);
+    // ── Step 7: Cross-agent trust verification ──
 
-    // ── Step 6: Second agent verifies ──
+    heading("Step 7: Orchestrator verifies deploy-bot's trust on-chain");
 
-    heading("Step 6: Second agent queries on-chain trust");
-    log(`orchestrator-agent calls verifyTrust("deploy-bot", 30)`);
-    log(`Result: ${trusted ? "TRUSTED" : "NOT TRUSTED"}`);
-    log(`→ The second agent can verify deploy-bot's track record on-chain.`);
+    log(`orchestrator calls verifyTrust("deploy-bot", 30)`);
+    log(`Result: ${trusted ? "TRUSTED ✓" : "NOT TRUSTED ✗"}`);
+
+    if (registryProvider) {
+      try {
+        const agentInfo = await registryProvider.getAgent("deploy-bot");
+        log(`On-chain identity: "${agentInfo.name}" — ${agentInfo.description}`);
+      } catch {
+        log(`(Registry lookup skipped — RPC rate limit)`);
+      }
+    }
+
+    log(`→ Any agent can verify deploy-bot's track record permissionlessly on Base.`);
   } else {
-    heading("Step 5: On-chain attestation (skipped — dry run)");
-    log("In live mode, the approval would be recorded on Base Sepolia.");
-    log("Another agent could then call verifyTrust() to check deploy-bot's record.");
+    heading("Step 6: On-chain attestation (skipped — dry run)");
+    log("In live mode:");
+    log("  → Trust attestation recorded on Base");
+    log("  → Agent identity stored in AgentRegistry");
+    log("  → Other agents verify trust via verifyTrust()");
   }
 
   // ── Summary ──
 
   heading("Summary");
-  log("PACT protocol flow complete:");
-  log("  1. Agent surfaced a high-stakes decision");
-  log("  2. Protocol classified it as blocked (requires principal approval)");
-  log("  3. Principal approved, trust score increased");
-  if (DEPLOYER_KEY && CONTRACT_ADDRESS) {
-    log("  4. Attestation recorded on Base Sepolia");
-    log("  5. Second agent verified trust on-chain");
+  log("PACT protocol flow:");
+  log("  1. Agents register on-chain (AgentRegistry)");
+  log("  2. Agent surfaces a high-stakes decision");
+  log("  3. Protocol classifies: blocked (requires principal approval)");
+  log("  4. Principal approves → trust score increases");
+  log("  5. Attestation recorded on Base (TrustAttestation)");
+  log("  6. Other agents verify trust on-chain — permissionless");
+  log("");
+  log("Contracts:");
+  if (hasOnChain) {
+    log(`  TrustAttestation: ${explorerBase}/address/${TRUST_CONTRACT}`);
+    if (REGISTRY_CONTRACT) {
+      log(`  AgentRegistry:    ${explorerBase}/address/${REGISTRY_CONTRACT}`);
+    }
   } else {
-    log("  4. (On-chain attestation available with env vars)");
+    log("  (deploy with DEPLOYER_KEY to see live contract links)");
   }
 
   console.log("\n✓ Demo complete\n");
