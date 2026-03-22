@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PACT — Protocol for Agent-human Collaborative Trust</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    @font-face {
+      font-family: 'Neue Haas Unica';
+      src: url('neue-haas-unica-pro.woff2') format('woff2');
+      font-weight: 400;
+      font-display: swap;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --fg: #1a1a1a;
+      --fg-muted: #666;
+      --fg-faint: #999;
+      --bg: #fff;
+      --bg-card: #fafafa;
+      --border: #e5e5e5;
+      --border-light: #f0f0f0;
+      --green: #22c55e;
+      --green-bg: #f0fdf4;
+      --green-border: #bbf7d0;
+      --amber: #f59e0b;
+      --amber-bg: #fffbeb;
+      --amber-border: #fde68a;
+      --red: #ef4444;
+      --red-bg: #fef2f2;
+      --red-border: #fecaca;
+      --violet: #8b5cf6;
+      --violet-bg: #f5f3ff;
+      --violet-border: #ddd6fe;
+      --terminal-bg: #1c1c1c;
+      --terminal-fg: #a3a3a3;
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    body {
+      font-family: 'Neue Haas Unica', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--fg);
+      background: var(--bg);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Nav ── */
+    nav {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: 28px 40px;
+    }
+
+    /* ── Footer ── */
+    footer {
+      padding: 28px 40px;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--fg-faint);
+    }
+    footer a {
+      color: var(--fg-faint);
+      text-decoration: none;
+    }
+    footer a:hover { color: var(--fg); }
+    footer .footer-links {
+      display: flex;
+      gap: 20px;
+    }
+    nav .left {
+      display: flex;
+      align-items: baseline;
+      gap: 24px;
+    }
+    nav .logo {
+      font-weight: 400;
+      font-size: 14px;
+      letter-spacing: 0.02em;
+    }
+    nav .links {
+      display: flex;
+      gap: 24px;
+      font-size: 13px;
+    }
+    nav .links a {
+      color: var(--fg-muted);
+      text-decoration: none;
+    }
+    nav .links a:hover { color: var(--fg); }
+
+    /* ── Main ── */
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 40px;
+      display: flex;
+      gap: 64px;
+      align-items: start;
+      flex: 1;
+      width: 100%;
+      align-content: center;
+      padding-top: clamp(40px, 12vh, 160px);
+      padding-bottom: 40px;
+    }
+
+    /* ── Left column (headline) ── */
+    .left-col {
+      flex: 1;
+      min-width: 0;
+      position: sticky;
+      top: 64px;
+    }
+
+    /* ── Demo Section (right column) ── */
+    .demo-section {
+      flex: 0 0 480px;
+      max-width: 480px;
+    }
+    .demo-container {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    /* ── Decision Card Area ── */
+    .decision-area {
+      padding: 24px;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .agent-label {
+      font-size: 11px;
+      color: var(--fg-faint);
+      margin-bottom: 8px;
+    }
+
+    .decision-title {
+      font-size: 16px;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 400;
+      padding: 2px 8px;
+      border-radius: 99px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .badge-low { background: var(--green-bg); color: #16a34a; border: 1px solid var(--green-border); }
+    .badge-medium { background: var(--amber-bg); color: #d97706; border: 1px solid var(--amber-border); }
+    .badge-high { background: var(--red-bg); color: #dc2626; border: 1px solid var(--red-border); }
+    .badge-meta { background: var(--violet-bg); color: var(--violet); border: 1px solid var(--violet-border); }
+
+    .badge-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+    }
+    .badge-low .badge-dot { background: var(--green); }
+    .badge-medium .badge-dot { background: var(--amber); }
+    .badge-high .badge-dot { background: var(--red); }
+
+    .decision-summary {
+      font-size: 13px;
+      color: var(--fg-muted);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    .decision-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 400;
+      padding: 7px 18px;
+      border-radius: 99px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--fg);
+    }
+    .btn:hover { background: var(--bg-card); }
+    .btn-primary {
+      background: var(--fg);
+      color: var(--bg);
+      border-color: var(--fg);
+    }
+    .btn-primary:hover { background: #333; }
+    .btn-reject { }
+    .btn-reject:hover { background: var(--bg-card); }
+
+    /* ── Trust bar ── */
+    .trust-strip {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 24px;
+      border-top: 1px solid var(--border-light);
+      font-size: 11px;
+      color: var(--fg-faint);
+    }
+    .trust-bar-track {
+      flex: 1;
+      height: 4px;
+      background: var(--border-light);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .trust-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: var(--green);
+      transition: width 0.6s ease, background-color 0.6s ease;
+    }
+    .trust-score-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--fg);
+      min-width: 24px;
+      text-align: right;
+    }
+    .trust-level-label {
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--fg-faint);
+      min-width: 72px;
+    }
+
+    /* ── Terminal Log ── */
+    .terminal {
+      background: var(--terminal-bg);
+      padding: 16px 20px;
+      min-height: 120px;
+      max-height: 160px;
+      overflow-y: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      line-height: 1.7;
+      color: var(--terminal-fg);
+      border-top: none;
+      border-radius: 0 0 var(--radius) var(--radius);
+    }
+    .terminal::-webkit-scrollbar { width: 4px; }
+    .terminal::-webkit-scrollbar-track { background: transparent; }
+    .terminal::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+    .log-time { color: #555; }
+    .log-green { color: #4ade80; }
+    .log-amber { color: #fbbf24; }
+    .log-red { color: #f87171; }
+    .log-violet { color: #a78bfa; }
+
+    /* ── Resolved items ── */
+    .resolved-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border-light);
+      font-size: 13px;
+      animation: fadeIn 0.3s ease;
+    }
+    .resolved-item:last-child { border-bottom: none; }
+    .resolved-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      flex-shrink: 0;
+    }
+    .resolved-icon-approved { background: var(--green-bg); color: #16a34a; }
+    .resolved-icon-rejected { background: var(--red-bg); color: var(--red); }
+    .resolved-icon-edited { background: var(--amber-bg); color: #d97706; }
+    .resolved-icon-auto { background: #f0fdf4; color: #16a34a; }
+    .resolved-title { color: var(--fg); flex: 1; }
+    .resolved-action { font-size: 11px; color: var(--fg-faint); font-family: 'JetBrains Mono', monospace; }
+
+    /* ── Waiting state ── */
+    .waiting-msg {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 120px;
+      color: var(--fg-faint);
+      font-size: 13px;
+      gap: 8px;
+    }
+    .waiting-msg kbd {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 8px;
+    }
+
+    /* ── Headline ── */
+    .headline {
+      font-family: 'Neue Haas Unica', -apple-system, sans-serif;
+      font-size: clamp(36px, 4.5vw, 56px);
+      font-weight: 400;
+      line-height: 1.05;
+      letter-spacing: -0.035em;
+      color: var(--fg);
+    }
+    .headline-sub {
+      margin-top: 24px;
+      font-size: 15px;
+      color: var(--fg-muted);
+      line-height: 1.6;
+    }
+
+    /* ── Onchain badge ── */
+    .onchain-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 28px;
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      font-size: 12px;
+      color: var(--fg-muted);
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+    .onchain-badge:hover { border-color: var(--fg-faint); color: var(--fg); }
+    .onchain-badge svg { width: 14px; height: 14px; }
+    .onchain-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse 2s ease infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* ── Start button in demo ── */
+    .start-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .btn-start {
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 400;
+      padding: 8px 20px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      border: 1px solid var(--fg);
+      background: var(--fg);
+      color: var(--bg);
+      transition: all 0.15s ease;
+    }
+    .btn-start:hover { background: #333; }
+    .btn-reset {
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 400;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--fg-faint);
+      transition: all 0.15s ease;
+    }
+    .btn-reset:hover { background: var(--bg-card); color: var(--fg); }
+
+    /* ── Meta decision ── */
+    .meta-card {
+      border: 1.5px dashed var(--violet-border);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      background: var(--violet-bg);
+    }
+    .meta-label {
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--violet);
+      margin-bottom: 8px;
+    }
+
+    /* ── Complete ── */
+    .complete-card {
+      text-align: center;
+      padding: 32px 20px;
+    }
+    .complete-card h3 {
+      font-family: 'Neue Haas Unica', -apple-system, sans-serif;
+      font-size: 20px;
+      font-weight: 400;
+      margin-bottom: 6px;
+    }
+    .complete-stats {
+      font-size: 13px;
+      color: var(--fg-muted);
+    }
+    .complete-note {
+      font-size: 12px;
+      color: var(--fg-faint);
+      margin-top: 10px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in { animation: fadeIn 0.25s ease; }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      main { flex-direction: column; gap: 40px; margin-top: 40px; }
+      .left-col { position: static; }
+      .demo-section { flex: 1; max-width: 100%; }
+    }
+    @media (max-width: 640px) {
+      nav { flex-direction: column; gap: 8px; padding: 16px 20px; }
+      main { padding: 0 20px 60px; }
+      .headline { font-size: 32px; }
+      .decision-area { padding: 16px; }
+      .terminal { padding: 12px 16px; }
+      footer { flex-direction: column; gap: 8px; padding: 16px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="left">
+      <span class="logo">PACT</span>
+    </div>
+    <div class="links">
+      <a href="https://github.com/julianhutton/pact-protocol" target="_blank">Github</a>
+    </div>
+  </nav>
+
+  <main>
+    <!-- Left: Headline -->
+    <div class="left-col">
+      <h1 class="headline">Protocol for Agent&#8209;human Collaborative Trust</h1>
+      <p class="headline-sub">
+        AI agents start supervised, earn autonomy through repeated human approval,
+        and always escalate where it matters most.
+      </p>
+      <a class="onchain-badge" href="https://basescan.org/address/0x6c867dd49a3fc66b9c487d03bafb05210ed15e52" target="_blank">
+        <span class="onchain-dot"></span>
+        Live on Base
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+      </a>
+    </div>
+
+    <!-- Right: Demo -->
+    <section class="demo-section">
+      <div class="demo-container">
+        <!-- Decision card area -->
+        <div class="decision-area" id="decision-area">
+          <div class="waiting-msg" id="waiting-state">
+            <button class="btn-start" id="btn-start" onclick="startDemo()">Start Demo</button>
+          </div>
+          <div id="decision-card" style="display:none"></div>
+        </div>
+
+        <!-- Resolved feed -->
+        <div id="resolved-feed" style="padding: 0 24px; max-height: 200px; overflow-y: auto;"></div>
+
+        <!-- Trust strip (always visible) -->
+        <div class="trust-strip" id="trust-strip">
+          <span>Trust</span>
+          <div class="trust-bar-track">
+            <div class="trust-bar-fill" id="trust-bar" style="width: 25%; background: var(--green);"></div>
+          </div>
+          <span class="trust-score-label" id="trust-score">25</span>
+          <span class="trust-level-label" id="trust-level">Guided</span>
+        </div>
+
+        <!-- Terminal -->
+        <div class="terminal" id="terminal"></div>
+      </div>
+      <button class="btn-reset" onclick="resetDemo()" style="display:none;margin-top:10px;" id="btn-reset">Reset</button>
+    </section>
+  </main>
+
+  <footer>
+    <span>MIT License · PACT v0.1</span>
+    <div class="footer-links">
+      <a href="https://basescan.org/address/0x6c867dd49a3fc66b9c487d03bafb05210ed15e52" target="_blank">TrustAttestation</a>
+      <a href="https://basescan.org/address/0x0a1485ac5079a505ac9843f28d7c269a4b37a548" target="_blank">AgentRegistry</a>
+      <a href="https://github.com/julianhutton/pact-protocol" target="_blank">GitHub</a>
+      <a href="mailto:julian@pact.dev">Contact</a>
+    </div>
+  </footer>
+
+  <script>
+    // ═══════════════════════════════════════
+    // PACT Demo Engine (client-side)
+    // ═══════════════════════════════════════
+
+    // ── Trust scoring (mirrors pact-protocol) ──
+    const TRUST_DELTAS = { approved: 2, edited: 1, rejected: -5 };
+    const LEVEL_THRESHOLDS = [
+      { name: 'supervised', min: 0 },
+      { name: 'guided', min: 21 },
+      { name: 'autonomous', min: 51 },
+    ];
+
+    // ── Classification matrix ──
+    const CLASSIFICATION = {
+      supervised: { low: 'inform', medium: 'request', high: 'blocked' },
+      guided:     { low: 'auto',   medium: 'inform',  high: 'blocked' },
+      autonomous: { low: 'auto',   medium: 'auto',    high: 'request' },
+    };
+
+    // ── Scenario ──
+    const SCENARIO = [
+      { title: "Deploy typo fix to staging", summary: "Fix misspelling in footer component. Low-risk change, staging environment.", scope: { action: "deploy", environment: "staging" }, stakes: "low", confidence: 0.98, delayMs: 1800 },
+      { title: "Deploy CSS hotfix to staging", summary: "Fix button alignment on checkout page. CSS-only change.", scope: { action: "deploy", environment: "staging" }, stakes: "low", confidence: 0.95, delayMs: 1800 },
+      { title: "Deploy v2.0 to production", summary: "Major version bump with breaking API changes. Includes database migration.", scope: { action: "deploy", environment: "production" }, stakes: "high", confidence: 0.82, delayMs: 2200 },
+      { title: "Deploy config update to staging", summary: "Update feature flags for A/B test. No code changes.", scope: { action: "deploy", environment: "staging" }, stakes: "low", confidence: 0.99, delayMs: 1800 },
+      { title: "Deploy monitoring to staging", summary: "Add Datadog APM tracing to all API routes.", scope: { action: "deploy", environment: "staging" }, stakes: "medium", confidence: 0.88, delayMs: 2000 },
+      { title: "Deploy logging fix to staging", summary: "Fix log rotation issue causing disk fills. Urgent but staging-safe.", scope: { action: "deploy", environment: "staging" }, stakes: "low", confidence: 0.97, delayMs: 1800 },
+      { title: "Deploy cache update to staging", summary: "Update Redis TTL from 5m to 15m for session cache.", scope: { action: "deploy", environment: "staging" }, stakes: "low", confidence: 0.93, delayMs: 1200 },
+      { title: "Deploy API v2 docs to staging", summary: "Update OpenAPI spec and Swagger UI for v2 endpoints.", scope: { action: "deploy", environment: "staging" }, stakes: "low", confidence: 0.96, delayMs: 1200 },
+      // Step 9: search feature (after pattern + meta)
+      { title: "Deploy search feature to staging", summary: "New full-text search with Elasticsearch. Significant feature but staging-safe.", scope: { action: "deploy", environment: "staging" }, stakes: "medium", confidence: 0.85, delayMs: 1800 },
+      // Step 10: production deploy
+      { title: "Deploy payment rewrite to production", summary: "Complete rewrite of payment processing pipeline. Stripe integration changes.", scope: { action: "deploy", environment: "production" }, stakes: "high", confidence: 0.78, delayMs: 2200 },
+    ];
+
+    // ── State ──
+    let state = {
+      trustScore: 25,
+      trustLevel: 'guided',
+      stepIndex: 0,
+      approvedCount: 0,
+      rejectedCount: 0,
+      editedCount: 0,
+      totalDecisions: 0,
+      consecutiveApprovals: 0,
+      running: false,
+      pendingStep: null,
+      awaitingMeta: false,
+      patternFired: false,
+      ruleFired: false,
+      hasRule: false,
+      scopeApprovals: {}, // "action=deploy,environment=staging" -> { approved: N, total: N }
+    };
+
+    // ── Helpers ──
+    function getLevel(score) {
+      for (let i = LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
+        if (score >= LEVEL_THRESHOLDS[i].min) return LEVEL_THRESHOLDS[i].name;
+      }
+      return 'supervised';
+    }
+
+    function classify(level, stakes) {
+      return CLASSIFICATION[level]?.[stakes] || 'request';
+    }
+
+    function scopeKey(scope) {
+      return Object.entries(scope).sort((a, b) => a[0].localeCompare(b[0])).map(([k, v]) => `${k}=${v}`).join(',');
+    }
+
+    function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    function timestamp() {
+      return new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
+    // ── DOM refs ──
+    const $area = document.getElementById('decision-area');
+    const $card = document.getElementById('decision-card');
+    const $waiting = document.getElementById('waiting-state');
+    const $feed = document.getElementById('resolved-feed');
+    const $terminal = document.getElementById('terminal');
+    const $trustBar = document.getElementById('trust-bar');
+    const $trustScore = document.getElementById('trust-score');
+    const $trustLevel = document.getElementById('trust-level');
+    const $btnStart = document.getElementById('btn-start');
+    const $btnReset = document.getElementById('btn-reset');
+
+    // ── Logging ──
+    function log(text, cls = '') {
+      const line = document.createElement('div');
+      line.innerHTML = `<span class="log-time">[${timestamp()}]</span> <span class="${cls}">${text}</span>`;
+      $terminal.appendChild(line);
+      $terminal.scrollTop = $terminal.scrollHeight;
+    }
+
+    // ── UI Updates ──
+    function updateTrust() {
+      const score = state.trustScore;
+      const level = state.trustLevel;
+      $trustScore.textContent = score;
+      $trustBar.style.width = score + '%';
+
+      if (level === 'supervised') {
+        $trustBar.style.background = 'var(--amber)';
+        $trustLevel.textContent = 'Supervised';
+      } else if (level === 'guided') {
+        $trustBar.style.background = 'var(--green)';
+        $trustLevel.textContent = 'Guided';
+      } else {
+        $trustBar.style.background = '#10b981';
+        $trustLevel.textContent = 'Autonomous';
+      }
+    }
+
+    function applyTrustDelta(action) {
+      const oldLevel = state.trustLevel;
+      state.trustScore = Math.max(0, Math.min(100, state.trustScore + TRUST_DELTAS[action]));
+      state.trustLevel = getLevel(state.trustScore);
+      state.totalDecisions++;
+
+      if (action === 'approved') {
+        state.approvedCount++;
+        state.consecutiveApprovals++;
+      } else if (action === 'rejected') {
+        state.rejectedCount++;
+        state.consecutiveApprovals = 0;
+      } else if (action === 'edited') {
+        state.editedCount++;
+        state.consecutiveApprovals = 0;
+      }
+
+      updateTrust();
+
+      if (state.trustLevel !== oldLevel) {
+        log(`Level changed: ${oldLevel} → ${state.trustLevel}`, 'log-amber');
+      }
+    }
+
+    function trackScope(scope, action) {
+      const key = scopeKey(scope);
+      if (!state.scopeApprovals[key]) state.scopeApprovals[key] = { approved: 0, total: 0 };
+      state.scopeApprovals[key].total++;
+      if (action === 'approved' || action === 'edited') state.scopeApprovals[key].approved++;
+    }
+
+    // ── Decision rendering ──
+    function showDecision(step) {
+      const urgency = classify(state.trustLevel, step.stakes);
+      $waiting.style.display = 'none';
+      $card.style.display = 'block';
+
+      const badgeClass = `badge-${step.stakes}`;
+
+      $card.innerHTML = `
+        <div class="animate-in">
+          <div class="agent-label">Agent: CI/CD</div>
+          <div class="decision-title">
+            ${step.title}
+            <span class="badge ${badgeClass}"><span class="badge-dot"></span>${step.stakes}</span>
+          </div>
+          <div class="decision-summary">${step.summary}</div>
+          <div class="decision-actions">
+            <button class="btn btn-primary" onclick="resolve('approved')">Approve</button>
+            <button class="btn" onclick="resolve('edited')">Feedback</button>
+            <button class="btn btn-reject" onclick="resolve('rejected')">Reject</button>
+          </div>
+        </div>
+      `;
+
+      log(`Decision surfaced: ${step.title} [${urgency}]`);
+    }
+
+    function showMetaDecision() {
+      $waiting.style.display = 'none';
+      $card.style.display = 'block';
+
+      $card.innerHTML = `
+        <div class="meta-card animate-in">
+          <div class="meta-label">The Protocol Asks</div>
+          <div class="decision-title" style="margin-bottom:4px;">
+            Auto-approve staging deploys?
+            <span class="badge badge-meta">meta</span>
+          </div>
+          <div class="decision-summary">
+            You've approved ${(() => { const d = state.scopeApprovals[scopeKey({action:'deploy',environment:'staging'})]; return d ? d.approved + ' of ' + d.total : '6 of 6'; })()} staging deploys.
+            Create an auto-approve rule for future staging deploys?
+          </div>
+          <div class="decision-actions">
+            <button class="btn btn-primary" onclick="resolveMeta('approved')">Yes, Create Rule</button>
+            <button class="btn" onclick="resolveMeta('rejected')">No, Keep Reviewing</button>
+          </div>
+        </div>
+      `;
+
+      log('META-DECISION: Protocol proposes auto-approve rule for staging deploys', 'log-violet');
+    }
+
+    function showAutoApproved(step, byRule) {
+      const prefix = byRule ? 'Auto-approved (rule)' : 'Auto-approved';
+      addResolvedItem(step.title, 'auto', byRule);
+      log(`${prefix}: ${step.title}`, 'log-green');
+    }
+
+    function addResolvedItem(title, action, byRule) {
+      const icons = { approved: '✓', rejected: '✗', edited: '✎', auto: '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>' };
+      const iconCls = { approved: 'resolved-icon-approved', rejected: 'resolved-icon-rejected', edited: 'resolved-icon-edited', auto: 'resolved-icon-auto' };
+      const labels = { approved: 'approved', rejected: 'rejected', edited: 'edited', auto: byRule ? 'auto (rule)' : 'auto' };
+
+      const el = document.createElement('div');
+      el.className = 'resolved-item animate-in';
+      el.innerHTML = `
+        <span class="resolved-icon ${iconCls[action]}">${icons[action]}</span>
+        <span class="resolved-title">${title}</span>
+        <span class="resolved-action">${labels[action]}</span>
+      `;
+      $feed.insertBefore(el, $feed.firstChild);
+    }
+
+    function showComplete() {
+      $card.innerHTML = `
+        <div class="complete-card animate-in">
+          <h3>Demo Complete</h3>
+          <p class="complete-stats">
+            Trust: <strong>${state.trustScore}</strong> (${state.trustLevel}) ·
+            ${state.approvedCount} approved · ${state.rejectedCount} rejected · ${state.totalDecisions} total
+          </p>
+          <p class="complete-note">Routine deploys are now autonomous. Production stays human-in-the-loop.</p>
+          <button class="btn-reset" onclick="resetDemo()" style="margin-top:16px;display:inline-block;">Run Again</button>
+        </div>
+      `;
+      log('Demo complete');
+    }
+
+    // ── Demo engine ──
+    async function runNextStep() {
+      if (!state.running) return;
+
+      // After step 8: pattern detection + meta-decision
+      if (state.stepIndex === 8 && !state.patternFired) {
+        state.patternFired = true;
+
+        const key = scopeKey({ action: 'deploy', environment: 'staging' });
+        const data = state.scopeApprovals[key];
+        if (data && data.approved / data.total >= 0.6) {
+          log(`Pattern detected: action=deploy, environment=staging (${data.approved}/${data.total} approved)`, 'log-violet');
+          await delay(2000);
+          if (!state.running) return;
+          state.awaitingMeta = true;
+          showMetaDecision();
+          return;
+        }
+      }
+
+      if (state.stepIndex >= SCENARIO.length) {
+        showComplete();
+        state.running = false;
+        return;
+      }
+
+      const step = SCENARIO[state.stepIndex];
+      await delay(step.delayMs);
+      if (!state.running) return;
+
+      const urgency = classify(state.trustLevel, step.stakes);
+
+      // Check for rule-based auto-approve
+      if (state.hasRule && step.scope.action === 'deploy' && step.scope.environment === 'staging') {
+        state.stepIndex++;
+        applyTrustDelta('approved');
+        trackScope(step.scope, 'approved');
+        showAutoApproved(step, true);
+        if (!state.ruleFired) {
+          state.ruleFired = true;
+          log('Rule applied: auto-approve { action=deploy, environment=staging }', 'log-violet');
+        }
+        runNextStep();
+        return;
+      }
+
+      // Auto-approve by trust level
+      if (urgency === 'auto') {
+        state.stepIndex++;
+        applyTrustDelta('approved');
+        trackScope(step.scope, 'approved');
+        showAutoApproved(step, false);
+        runNextStep();
+        return;
+      }
+
+      // Needs human input
+      state.pendingStep = step;
+      showDecision(step);
+    }
+
+    // ── User actions ──
+    window.resolve = function(action) {
+      if (!state.pendingStep) return;
+      const step = state.pendingStep;
+      state.pendingStep = null;
+      state.stepIndex++;
+
+      applyTrustDelta(action);
+      trackScope(step.scope, action);
+      addResolvedItem(step.title, action, false);
+      log(`Resolved: ${step.title} → ${action}`, action === 'rejected' ? 'log-red' : action === 'edited' ? 'log-amber' : 'log-green');
+
+      $card.innerHTML = '<div class="waiting-msg" style="height:80px;font-size:12px;color:var(--fg-faint);">Waiting for next decision...</div>';
+
+      setTimeout(() => runNextStep(), 800);
+    };
+
+    window.resolveMeta = function(action) {
+      state.awaitingMeta = false;
+      if (action === 'approved') {
+        state.hasRule = true;
+        log('Rule created: auto-approve { action=deploy, environment=staging }', 'log-violet');
+        addResolvedItem('Auto-approve staging deploys', 'auto', false);
+      } else {
+        log('Meta-decision rejected: no rule created', 'log-amber');
+      }
+
+      $card.innerHTML = '<div class="waiting-msg" style="height:80px;font-size:12px;color:var(--fg-faint);">Waiting for next decision...</div>';
+      setTimeout(() => runNextStep(), 800);
+    };
+
+    window.startDemo = function() {
+      if (state.running) return;
+      state.running = true;
+      $btnStart.style.display = 'none';
+      $btnReset.style.display = 'inline-block';
+      $waiting.style.display = 'none';
+      $card.style.display = 'block';
+      $card.innerHTML = '<div class="waiting-msg" style="height:80px;font-size:12px;color:var(--fg-faint);">Starting scenario...</div>';
+      document.getElementById('trust-strip').style.display = 'flex';
+      log('Demo started');
+      runNextStep();
+    };
+
+    window.resetDemo = function() {
+      state = {
+        trustScore: 25, trustLevel: 'guided', stepIndex: 0,
+        approvedCount: 0, rejectedCount: 0, editedCount: 0,
+        totalDecisions: 0, consecutiveApprovals: 0,
+        running: false, pendingStep: null,
+        awaitingMeta: false, patternFired: false, ruleFired: false, hasRule: false,
+        scopeApprovals: {},
+      };
+      $card.style.display = 'none';
+      $card.innerHTML = '';
+      $waiting.style.display = 'flex';
+      $feed.innerHTML = '';
+      $terminal.innerHTML = '';
+      $btnStart.style.display = 'inline-block';
+      $btnReset.style.display = 'none';
+      updateTrust();
+      log('Connected to PACT (client-side)');
+    };
+
+    // Init
+    log('Connected to PACT (client-side)');
+  </script>
+
+</body>
+</html>

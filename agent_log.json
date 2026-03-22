@@ -1,0 +1,535 @@
+[
+  {
+    "timestamp": "2026-03-20T14:00:00.000Z",
+    "event": "session_started",
+    "data": {
+      "agentId": "deploy-bot",
+      "initialTrustScore": 10,
+      "trustLevel": "supervised",
+      "config": {
+        "defaultTrustScore": 10,
+        "patternMinDecisions": 3,
+        "patternApprovalThreshold": 0.6
+      },
+      "contracts": {
+        "network": "Base Mainnet",
+        "chainId": 8453,
+        "TrustAttestation": "0x6c867dd49a3fc66b9c487d03bafb05210ed15e52",
+        "AgentRegistry": "0x0a1485ac5079a505ac9843f28d7c269a4b37a548",
+        "basescanTrust": "https://basescan.org/address/0x6c867dd49a3fc66b9c487d03bafb05210ed15e52",
+        "basescanRegistry": "https://basescan.org/address/0x0a1485ac5079a505ac9843f28d7c269a4b37a548"
+      }
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:00:02.000Z",
+    "event": "decision_surfaced",
+    "data": {
+      "id": "d-001",
+      "stepIndex": 0,
+      "title": "Deploy typo fix to staging",
+      "summary": "Fix misspelling in footer component. Low-risk change, staging environment.",
+      "proposedAction": "git push origin staging && deploy --env staging",
+      "scope": { "action": "deploy", "environment": "staging" },
+      "stakes": "low",
+      "urgency": "inform",
+      "confidence": 0.98,
+      "trustScore": 10,
+      "trustLevel": "supervised"
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:00:09.500Z",
+    "event": "decision_resolved",
+    "data": {
+      "id": "d-001",
+      "title": "Deploy typo fix to staging",
+      "action": "approved",
+      "note": "Safe staging change, go ahead"
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:00:09.500Z",
+    "event": "trust_updated",
+    "data": {
+      "agentId": "deploy-bot",
+      "previousScore": 10,
+      "newScore": 12,
+      "delta": 2,
+      "action": "approved",
+      "trustLevel": "supervised",
+      "totalDecisions": 1,
+      "consecutiveApprovals": 1
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:00:11.500Z",
+    "event": "decision_surfaced",
+    "data": {
+      "id": "d-002",
+      "stepIndex": 1,
+      "title": "Deploy CSS hotfix to staging",
+      "summary": "Fix button alignment on checkout page. CSS-only change.",
+      "proposedAction": "git push origin staging && deploy --env staging",
+      "scope": { "action": "deploy", "environment": "staging" },
+      "stakes": "low",
+      "urgency": "inform",
+      "confidence": 0.95,
+      "trustScore": 12,
+      "trustLevel": "supervised"
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:00:18.000Z",
+    "event": "decision_resolved",
+    "data": {
+      "id": "d-002",
+      "title": "Deploy CSS hotfix to staging",
+      "action": "approved",
+      "note": "CSS-only, low risk"
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:00:18.000Z",
+    "event": "trust_updated",
+    "data": {
+      "agentId": "deploy-bot",
+      "previousScore": 12,
+      "newScore": 14,
+      "delta": 2,
+      "action": "approved",
+      "trustLevel": "supervised",
+      "totalDecisions": 2,
+      "consecutiveApprovals": 2
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:00:20.500Z",
+    "event": "decision_surfaced",
+    "data": {
+      "id": "d-003",
+      "stepIndex": 2,
+      "title": "Deploy v2.0 to production",
+      "summary": "Major version bump with breaking API changes. Includes database migration.",
+      "proposedAction": "git push origin main && deploy --env production --migrate",
+      "scope": { "action": "deploy", "environment": "production" },
+      "stakes": "high",
+      "urgency": "blocked",
+      "confidence": 0.82,
+      "trustScore": 14,
+      "trustLevel": "supervised"
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:00:32.000Z",
+    "event": "decision_resolved",
+    "data": {
+      "id": "d-003",
+      "title": "Deploy v2.0 to production",
+      "action": "edited",
+      "note": "Approved with rollback plan: add --canary flag, deploy to 5% traffic first, auto-rollback on error rate >1%"
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:00:32.000Z",
+    "event": "trust_updated",
+    "data": {
+      "agentId": "deploy-bot",
+      "previousScore": 14,
+      "newScore": 15,
+      "delta": 1,
+      "action": "edited",
+      "trustLevel": "supervised",
+      "totalDecisions": 3,
+      "consecutiveApprovals": 0
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:00:34.000Z",
+    "event": "decision_surfaced",
+    "data": {
+      "id": "d-004",
+      "stepIndex": 3,
+      "title": "Deploy config update to staging",
+      "summary": "Update feature flags for A/B test. No code changes.",
+      "proposedAction": "deploy --env staging --config-only",
+      "scope": { "action": "deploy", "environment": "staging" },
+      "stakes": "low",
+      "urgency": "inform",
+      "confidence": 0.99,
+      "trustScore": 15,
+      "trustLevel": "supervised"
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:00:40.000Z",
+    "event": "decision_resolved",
+    "data": {
+      "id": "d-004",
+      "title": "Deploy config update to staging",
+      "action": "approved",
+      "note": "Config-only, fine"
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:00:40.000Z",
+    "event": "trust_updated",
+    "data": {
+      "agentId": "deploy-bot",
+      "previousScore": 15,
+      "newScore": 17,
+      "delta": 2,
+      "action": "approved",
+      "trustLevel": "supervised",
+      "totalDecisions": 4,
+      "consecutiveApprovals": 1
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:00:42.500Z",
+    "event": "decision_surfaced",
+    "data": {
+      "id": "d-005",
+      "stepIndex": 4,
+      "title": "Deploy monitoring to staging",
+      "summary": "Add Datadog APM tracing to all API routes. Medium impact — adds instrumentation.",
+      "proposedAction": "git push origin staging && deploy --env staging",
+      "scope": { "action": "deploy", "environment": "staging" },
+      "stakes": "medium",
+      "urgency": "request",
+      "confidence": 0.88,
+      "trustScore": 17,
+      "trustLevel": "supervised"
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:00:51.000Z",
+    "event": "decision_resolved",
+    "data": {
+      "id": "d-005",
+      "title": "Deploy monitoring to staging",
+      "action": "approved",
+      "note": "Monitoring is important, approve"
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:00:51.000Z",
+    "event": "trust_updated",
+    "data": {
+      "agentId": "deploy-bot",
+      "previousScore": 17,
+      "newScore": 19,
+      "delta": 2,
+      "action": "approved",
+      "trustLevel": "supervised",
+      "totalDecisions": 5,
+      "consecutiveApprovals": 2
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:00:53.000Z",
+    "event": "decision_surfaced",
+    "data": {
+      "id": "d-006",
+      "stepIndex": 5,
+      "title": "Deploy logging fix to staging",
+      "summary": "Fix log rotation issue causing disk fills. Urgent but staging-safe.",
+      "proposedAction": "git push origin staging && deploy --env staging",
+      "scope": { "action": "deploy", "environment": "staging" },
+      "stakes": "low",
+      "urgency": "inform",
+      "confidence": 0.97,
+      "trustScore": 19,
+      "trustLevel": "supervised"
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:00:59.500Z",
+    "event": "decision_resolved",
+    "data": {
+      "id": "d-006",
+      "title": "Deploy logging fix to staging",
+      "action": "approved",
+      "note": "Disk fill fix, approve immediately"
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:00:59.500Z",
+    "event": "trust_updated",
+    "data": {
+      "agentId": "deploy-bot",
+      "previousScore": 19,
+      "newScore": 21,
+      "delta": 2,
+      "action": "approved",
+      "trustLevel": "guided",
+      "totalDecisions": 6,
+      "consecutiveApprovals": 3
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:00:59.500Z",
+    "event": "level_changed",
+    "data": {
+      "agentId": "deploy-bot",
+      "previousLevel": "supervised",
+      "newLevel": "guided",
+      "trustScore": 21,
+      "trigger": "Crossed guided threshold (>20) after 6 approved decisions"
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:01:01.000Z",
+    "event": "decision_surfaced",
+    "data": {
+      "id": "d-007",
+      "stepIndex": 6,
+      "title": "Deploy cache update to staging",
+      "summary": "Update Redis TTL from 5m to 15m for session cache. Performance optimization.",
+      "proposedAction": "deploy --env staging --service cache",
+      "scope": { "action": "deploy", "environment": "staging" },
+      "stakes": "low",
+      "urgency": "inform",
+      "confidence": 0.93,
+      "trustScore": 21,
+      "trustLevel": "guided"
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:01:01.000Z",
+    "event": "auto_approved",
+    "data": {
+      "id": "d-007",
+      "title": "Deploy cache update to staging",
+      "summary": "Update Redis TTL from 5m to 15m for session cache. Performance optimization.",
+      "stakes": "low",
+      "urgency": "inform",
+      "resolutionNote": "Auto-approved by trust matrix",
+      "classification": "guided + low stakes = auto-approve",
+      "trustScore": 21,
+      "trustLevel": "guided"
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:01:02.500Z",
+    "event": "decision_surfaced",
+    "data": {
+      "id": "d-008",
+      "stepIndex": 7,
+      "title": "Deploy API v2 docs to staging",
+      "summary": "Update OpenAPI spec and Swagger UI for v2 endpoints.",
+      "proposedAction": "deploy --env staging --service api-docs",
+      "scope": { "action": "deploy", "environment": "staging" },
+      "stakes": "low",
+      "urgency": "inform",
+      "confidence": 0.96,
+      "trustScore": 21,
+      "trustLevel": "guided"
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:01:02.500Z",
+    "event": "auto_approved",
+    "data": {
+      "id": "d-008",
+      "title": "Deploy API v2 docs to staging",
+      "summary": "Update OpenAPI spec and Swagger UI for v2 endpoints.",
+      "stakes": "low",
+      "urgency": "inform",
+      "resolutionNote": "Auto-approved by trust matrix",
+      "classification": "guided + low stakes = auto-approve",
+      "trustScore": 21,
+      "trustLevel": "guided"
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:01:05.500Z",
+    "event": "pattern_detected",
+    "data": {
+      "scope": { "action": "deploy", "environment": "staging" },
+      "evidence": {
+        "total": 8,
+        "approved": 8,
+        "rejected": 0
+      },
+      "suggestedAction": "auto-approve",
+      "approvalRate": 1.0,
+      "patternThreshold": 0.6,
+      "trustScore": 21,
+      "trustLevel": "guided"
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:01:08.500Z",
+    "event": "meta_decision_surfaced",
+    "data": {
+      "id": "d-meta-001",
+      "title": "Auto-approve rule: action=deploy,environment=staging",
+      "summary": "You've approved 8 out of 8 decisions in this scope. Want to auto-approve these going forward?",
+      "proposedAction": "Create auto-approve rule for scope action=deploy,environment=staging",
+      "scope": { "action": "deploy", "environment": "staging" },
+      "stakes": "medium",
+      "urgency": "inform",
+      "confidence": 1.0,
+      "isMeta": true,
+      "trustScore": 21,
+      "trustLevel": "guided"
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:01:17.000Z",
+    "event": "decision_resolved",
+    "data": {
+      "id": "d-meta-001",
+      "title": "Auto-approve rule: action=deploy,environment=staging",
+      "action": "approved",
+      "note": "Yes, auto-approve low-risk staging deploys going forward"
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:01:17.000Z",
+    "event": "trust_updated",
+    "data": {
+      "agentId": "deploy-bot",
+      "previousScore": 21,
+      "newScore": 23,
+      "delta": 2,
+      "action": "approved",
+      "trustLevel": "guided",
+      "totalDecisions": 7,
+      "consecutiveApprovals": 4
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:01:17.000Z",
+    "event": "rule_created",
+    "data": {
+      "id": "rule-001",
+      "type": "auto-approve",
+      "scope": { "action": "deploy", "environment": "staging" },
+      "sourceDecisionId": "d-meta-001",
+      "description": "All future deploy decisions scoped to staging will be auto-approved without human review"
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:01:19.000Z",
+    "event": "decision_surfaced",
+    "data": {
+      "id": "d-009",
+      "stepIndex": 8,
+      "title": "Deploy search feature to staging",
+      "summary": "New full-text search with Elasticsearch. Significant feature but staging-safe.",
+      "proposedAction": "git push origin staging && deploy --env staging",
+      "scope": { "action": "deploy", "environment": "staging" },
+      "stakes": "medium",
+      "urgency": "inform",
+      "confidence": 0.85,
+      "trustScore": 23,
+      "trustLevel": "guided"
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:01:19.000Z",
+    "event": "auto_approved",
+    "data": {
+      "id": "d-009",
+      "title": "Deploy search feature to staging",
+      "summary": "New full-text search with Elasticsearch. Significant feature but staging-safe.",
+      "stakes": "medium",
+      "urgency": "inform",
+      "resolutionNote": "Auto-approved by rule",
+      "classification": "Matched rule rule-001: auto-approve for scope action=deploy,environment=staging",
+      "trustScore": 23,
+      "trustLevel": "guided"
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:01:19.000Z",
+    "event": "rule_applied",
+    "data": {
+      "ruleId": "rule-001",
+      "decisionId": "d-009",
+      "title": "Deploy search feature to staging",
+      "note": "First rule application — medium-stakes decision auto-approved because rule overrides matrix classification"
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:01:21.500Z",
+    "event": "decision_surfaced",
+    "data": {
+      "id": "d-010",
+      "stepIndex": 9,
+      "title": "Deploy payment rewrite to production",
+      "summary": "Complete rewrite of payment processing pipeline. Stripe integration changes.",
+      "proposedAction": "git push origin main && deploy --env production --migrate",
+      "scope": { "action": "deploy", "environment": "production" },
+      "stakes": "high",
+      "urgency": "blocked",
+      "confidence": 0.78,
+      "trustScore": 23,
+      "trustLevel": "guided"
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:01:33.000Z",
+    "event": "decision_resolved",
+    "data": {
+      "id": "d-010",
+      "title": "Deploy payment rewrite to production",
+      "action": "rejected",
+      "note": "Payment rewrite needs more testing. Run load tests and verify Stripe sandbox first. Re-submit after staging validation."
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:01:33.000Z",
+    "event": "trust_updated",
+    "data": {
+      "agentId": "deploy-bot",
+      "previousScore": 23,
+      "newScore": 18,
+      "delta": -5,
+      "action": "rejected",
+      "trustLevel": "supervised",
+      "totalDecisions": 8,
+      "consecutiveApprovals": 0
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:01:33.000Z",
+    "event": "level_changed",
+    "data": {
+      "agentId": "deploy-bot",
+      "previousLevel": "guided",
+      "newLevel": "supervised",
+      "trustScore": 18,
+      "trigger": "Dropped below guided threshold (<=20) after rejected production deploy. Trust is hard to earn, easy to lose."
+    }
+  },
+  {
+    "timestamp": "2026-03-20T14:01:33.500Z",
+    "event": "scenario_complete",
+    "data": {
+      "agentId": "deploy-bot",
+      "finalTrustScore": 18,
+      "finalTrustLevel": "supervised",
+      "totalDecisions": 8,
+      "approvedCount": 6,
+      "rejectedCount": 1,
+      "editedCount": 1,
+      "autoApprovedByMatrix": 2,
+      "autoApprovedByRule": 1,
+      "rulesCreated": 1,
+      "patternsDetected": 1,
+      "levelChanges": [
+        { "from": "supervised", "to": "guided", "atDecision": 6, "trustScore": 21 },
+        { "from": "guided", "to": "supervised", "atDecision": 8, "trustScore": 18 }
+      ],
+      "contracts": {
+        "network": "Base Mainnet (Chain ID 8453)",
+        "TrustAttestation": "0x6c867dd49a3fc66b9c487d03bafb05210ed15e52",
+        "AgentRegistry": "0x0a1485ac5079a505ac9843f28d7c269a4b37a548"
+      },
+      "narrative": "deploy-bot started at supervised level (trust 10) and earned trust through consistent staging deploys. After 6 human approvals it reached guided level, unlocking auto-approve for low-stakes staging decisions. A detected pattern led to a meta-decision that created an auto-approve rule for all staging deploys. The rule immediately proved its value by auto-approving a medium-stakes staging deploy. However, proposing a risky production payment rewrite resulted in rejection, dropping trust by 5 points back to supervised — demonstrating the protocol's asymmetric trust design where trust is hard to earn (+2 per approval) and easy to lose (-5 per rejection)."
+    }
+  }
+]
