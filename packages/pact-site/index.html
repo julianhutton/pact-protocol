@@ -374,6 +374,32 @@
       50% { opacity: 0.4; }
     }
 
+    /* ── Install snippet ── */
+    .install-snippet {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 12px;
+      padding: 8px 14px;
+      background: var(--terminal-bg);
+      border-radius: var(--radius-sm);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--terminal-fg);
+    }
+    .install-snippet code { color: #e5e5e5; }
+    .install-snippet .copy-btn {
+      background: none;
+      border: none;
+      color: var(--terminal-fg);
+      cursor: pointer;
+      padding: 2px;
+      display: flex;
+      align-items: center;
+      transition: color 0.15s ease;
+    }
+    .install-snippet .copy-btn:hover { color: #e5e5e5; }
+
     /* ── Start button in demo ── */
     .start-container {
       display: flex;
@@ -474,6 +500,7 @@
       <span class="logo">PACT</span>
     </div>
     <div class="links">
+      <a href="https://www.npmjs.com/package/pact-protocol" target="_blank">npm</a>
       <a href="https://github.com/julianhutton/pact-protocol" target="_blank">Github</a>
     </div>
   </nav>
@@ -491,6 +518,12 @@
         Live on Base
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
       </a>
+      <div class="install-snippet">
+        <code>npm install pact-protocol</code>
+        <button class="copy-btn" onclick="navigator.clipboard.writeText('npm install pact-protocol');this.innerHTML='✓';setTimeout(()=>{this.innerHTML='<svg width=&quot;14&quot; height=&quot;14&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot;><rect x=&quot;9&quot; y=&quot;9&quot; width=&quot;13&quot; height=&quot;13&quot; rx=&quot;2&quot;/><path d=&quot;M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1&quot;/></svg>'},1500)" aria-label="Copy to clipboard">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        </button>
+      </div>
     </div>
 
     <!-- Right: Demo -->
