@@ -5,6 +5,13 @@
     "": {
       "name": "pact-monorepo",
     },
+    "packages/pact-demo": {
+      "name": "pact-demo",
+      "version": "0.1.0",
+      "dependencies": {
+        "pact-protocol": "workspace:*",
+      },
+    },
     "packages/pact-onchain": {
       "name": "pact-onchain",
       "version": "0.1.0",
@@ -861,6 +868,8 @@
     "p-locate": ["p-locate@5.0.0", "", { "dependencies": { "p-limit": "^3.0.2" } }, "sha512-LaNjtRWUBY++zB5nE/NwcaoMylSPk+S+ZHNB1TzdbMJMny6dynpAGt7X/tl/QYq3TIeE6nxHppbo2LGymrG5Pw=="],
 
     "p-map": ["p-map@4.0.0", "", { "dependencies": { "aggregate-error": "^3.0.0" } }, "sha512-/bjOqmgETBYB5BoEeGVea8dmvHb2m9GLy1E9W43yeyfP6QQCZGFNa+XRceJEuDB6zqr+gKpIAmlLebMpykw/MQ=="],
+
+    "pact-demo": ["pact-demo@workspace:packages/pact-demo"],
 
     "pact-onchain": ["pact-onchain@workspace:packages/pact-onchain"],
 

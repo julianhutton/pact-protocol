@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-slate-950">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PACT Protocol — Interactive Demo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+    :root {
+      --trust-color: #f59e0b;
+      --trust-pct: 10;
+      --zone-glow: rgba(245, 158, 11, 0.5);
+      --zone-border: rgba(245, 158, 11, 0.3);
+    }
+
+    body { font-family: 'Outfit', sans-serif; }
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* Trust-ring logo */
+    .trust-ring {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: conic-gradient(
+        var(--trust-color) calc(var(--trust-pct) * 1%),
+        rgba(255,255,255,0.06) 0
+      );
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.6s ease;
+      position: relative;
+    }
+    .trust-ring::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      border-radius: 50%;
+      background: conic-gradient(
+        var(--trust-color) calc(var(--trust-pct) * 1%),
+        transparent 0
+      );
+      opacity: 0.3;
+      filter: blur(4px);
+      z-index: -1;
+    }
+    .trust-ring-inner {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #020617;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Segmented gauge */
+    .gauge-container {
+      display: flex;
+      height: 14px;
+      border-radius: 7px;
+      overflow: hidden;
+      position: relative;
+      gap: 2px;
+    }
+    .gauge-segment {
+      position: relative;
+      overflow: hidden;
+      border-radius: 4px;
+    }
+    .gauge-segment-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      transition: width 0.6s ease;
+      border-radius: 4px;
+    }
+    .gauge-dot {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.9);
+      transition: left 0.6s ease, background-color 0.6s ease, box-shadow 0.6s ease;
+      z-index: 10;
+    }
+
+    /* Header animated border */
+    .header-glow {
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, var(--trust-color) 50%, transparent 100%);
+      opacity: 0.5;
+      transition: all 0.6s ease;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 8px rgba(139, 92, 246, 0.4); }
+      50% { box-shadow: 0 0 24px rgba(139, 92, 246, 0.7); }
+    }
+    @keyframes slide-in {
+      from { transform: translateY(-16px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes fade-down {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0.4; transform: translateY(8px); }
+    }
+    @keyframes glow-in {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-4px); }
+      40% { transform: translateX(4px); }
+      60% { transform: translateX(-2px); }
+      80% { transform: translateX(2px); }
+    }
+    @keyframes dot-pulse {
+      0%, 100% { box-shadow: 0 0 4px var(--trust-color); }
+      50% { box-shadow: 0 0 12px var(--trust-color), 0 0 20px var(--trust-color); }
+    }
+    .animate-slide-in { animation: slide-in 0.3s ease-out; }
+    .animate-glow-in { animation: glow-in 0.4s ease-out; }
+    .animate-shake { animation: shake 0.4s ease-out; }
+    .pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+    .card-resolved { animation: fade-down 0.3s ease-out forwards; }
+    .dot-pulse { animation: dot-pulse 2s ease-in-out infinite; }
+
+    /* Matrix */
+    .matrix-cell {
+      transition: all 0.3s ease;
+      border: 1px solid transparent;
+    }
+    .matrix-cell.active {
+      box-shadow: 0 0 16px var(--zone-glow), inset 0 0 8px var(--zone-glow);
+      transform: scale(1.06);
+      border-color: var(--zone-border);
+    }
+
+    .trust-bar { transition: width 0.6s ease, background-color 0.6s ease; }
+    .decision-card { transition: all 0.3s ease; }
+
+    /* Stakes bar */
+    .stakes-bar {
+      width: 4px;
+      border-radius: 2px;
+      flex-shrink: 0;
+      min-height: 100%;
+      align-self: stretch;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+    /* Subtle noise texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+    body > * { position: relative; z-index: 1; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+
+  <!-- Header -->
+  <header class="px-6 py-3">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="trust-ring" id="header-ring">
+          <div class="trust-ring-inner">P</div>
+        </div>
+        <div>
+          <h1 class="text-base font-semibold tracking-tight">PACT Protocol</h1>
+          <span class="text-[10px] text-slate-500 tracking-widest uppercase">Programmable Autonomy through Calibrated Trust</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <!-- Trust chip -->
+        <div class="flex items-center gap-2 bg-slate-900/80 border border-slate-800 rounded-full px-3 py-1.5">
+          <span class="text-[10px] text-slate-500 uppercase tracking-wider">Trust</span>
+          <span id="header-trust" class="mono font-bold text-sm" style="color: var(--trust-color)">10</span>
+          <span id="header-level" class="text-[10px] px-2 py-0.5 rounded-full bg-amber-900/40 text-amber-400 font-medium tracking-wide">SUPERVISED</span>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button id="btn-start" onclick="startDemo()" class="px-4 py-1.5 bg-teal-600 hover:bg-teal-500 rounded-lg text-sm font-medium transition-all hover:shadow-lg hover:shadow-teal-600/20">
+            Start Demo
+          </button>
+          <button onclick="resetDemo()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm transition-colors">
+            Reset
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="header-glow mt-3"></div>
+  </header>
+
+  <!-- Main Layout -->
+  <main class="flex h-[calc(100vh-72px)]">
+
+    <!-- Left: Decision Feed -->
+    <section class="w-1/2 border-r border-slate-800/60 flex flex-col">
+      <div class="px-4 py-3 border-b border-slate-800/60 flex items-center gap-2">
+        <span class="text-sm font-medium text-slate-400">Decision Feed</span>
+        <span class="mono text-[10px] text-slate-600">DeployBot CI/CD</span>
+      </div>
+
+      <!-- Active Decision -->
+      <div id="active-decision" class="px-4 py-4 min-h-[180px]">
+        <div id="waiting-state" class="flex items-center justify-center h-32 text-slate-600 text-sm">
+          Press <span class="mono mx-1 px-2 py-0.5 bg-slate-800 rounded text-slate-400">Start Demo</span> to begin
+        </div>
+        <div id="decision-card" class="hidden"></div>
+      </div>
+
+      <!-- Resolved Feed -->
+      <div class="flex-1 overflow-y-auto px-4 pb-4 space-y-2" id="resolved-feed"></div>
+    </section>
+
+    <!-- Right: Dashboard -->
+    <section class="w-1/2 flex flex-col overflow-y-auto">
+
+      <!-- Trust Gauge -->
+      <div class="px-6 py-5 border-b border-slate-800/60">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-sm font-medium text-slate-400">Trust Score</span>
+          <div class="flex items-center gap-2">
+            <span id="trust-score" class="mono text-2xl font-bold" style="color: var(--trust-color)">10</span>
+            <span class="text-slate-600 mono text-sm">/ 100</span>
+          </div>
+        </div>
+
+        <!-- Segmented Gauge -->
+        <div class="relative">
+          <div class="gauge-container">
+            <!-- Supervised zone: 0-20 (20% width) -->
+            <div class="gauge-segment bg-amber-950/30" style="width: 20%">
+              <div id="gauge-fill-1" class="gauge-segment-fill bg-amber-500/80" style="width: 50%"></div>
+            </div>
+            <!-- Guided zone: 21-50 (30% width) -->
+            <div class="gauge-segment bg-teal-950/30" style="width: 30%">
+              <div id="gauge-fill-2" class="gauge-segment-fill bg-teal-500/80" style="width: 0%"></div>
+            </div>
+            <!-- Autonomous zone: 51-100 (50% width) -->
+            <div class="gauge-segment bg-emerald-950/30" style="width: 50%">
+              <div id="gauge-fill-3" class="gauge-segment-fill bg-emerald-500/80" style="width: 0%"></div>
+            </div>
+          </div>
+          <!-- Position dot -->
+          <div id="gauge-dot" class="gauge-dot dot-pulse" style="left: 10%; background: #f59e0b; box-shadow: 0 0 8px #f59e0b;"></div>
+        </div>
+
+        <div class="flex mt-2.5 text-[10px] tracking-wider uppercase" style="gap: 2px;">
+          <span class="text-amber-500/60" style="width: 20%">Supervised</span>
+          <span class="text-teal-500/60" style="width: 30%">Guided</span>
+          <span class="text-emerald-500/60" style="width: 50%">Autonomous</span>
+        </div>
+
+        <div id="level-badge" class="mt-2.5 inline-block text-[10px] px-3 py-1 rounded-full bg-amber-900/40 text-amber-400 font-medium tracking-wider uppercase">
+          SUPERVISED
+        </div>
+      </div>
+
+      <!-- Classification Matrix -->
+      <div class="px-6 py-5 border-b border-slate-800/60">
+        <div class="text-sm font-medium text-slate-400 mb-3">Classification Matrix</div>
+        <div class="border border-slate-700/50 rounded-xl p-3 bg-slate-900/50">
+          <div class="grid grid-cols-4 gap-1.5 text-xs">
+            <!-- Header row -->
+            <div></div>
+            <div class="text-center text-slate-500 py-1 font-medium">Low Stakes</div>
+            <div class="text-center text-slate-500 py-1 font-medium">Med Stakes</div>
+            <div class="text-center text-slate-500 py-1 font-medium">High Stakes</div>
+            <!-- Supervised row -->
+            <div class="text-amber-500/70 py-2.5 pr-2 text-right font-medium text-[11px]">Supervised</div>
+            <div id="cell-supervised-low" class="matrix-cell rounded-lg py-2.5 px-1 text-center bg-amber-950/20 text-teal-400">
+              <div class="text-sm mb-0.5">&#128065;</div><span class="text-[10px] tracking-wide">INFORM</span>
+            </div>
+            <div id="cell-supervised-medium" class="matrix-cell rounded-lg py-2.5 px-1 text-center bg-amber-950/20 text-amber-400">
+              <div class="text-sm mb-0.5">&#129309;</div><span class="text-[10px] tracking-wide">REQUEST</span>
+            </div>
+            <div id="cell-supervised-high" class="matrix-cell rounded-lg py-2.5 px-1 text-center bg-amber-950/20 text-red-400">
+              <div class="text-sm mb-0.5">&#128274;</div><span class="text-[10px] tracking-wide">BLOCKED</span>
+            </div>
+            <!-- Guided row -->
+            <div class="text-teal-500/70 py-2.5 pr-2 text-right font-medium text-[11px]">Guided</div>
+            <div id="cell-guided-low" class="matrix-cell rounded-lg py-2.5 px-1 text-center bg-teal-950/20 text-emerald-400">
+              <div class="text-sm mb-0.5">&#9889;</div><span class="text-[10px] tracking-wide">AUTO</span>
+            </div>
+            <div id="cell-guided-medium" class="matrix-cell rounded-lg py-2.5 px-1 text-center bg-teal-950/20 text-teal-400">
+              <div class="text-sm mb-0.5">&#128065;</div><span class="text-[10px] tracking-wide">INFORM</span>
+            </div>
+            <div id="cell-guided-high" class="matrix-cell rounded-lg py-2.5 px-1 text-center bg-teal-950/20 text-red-400">
+              <div class="text-sm mb-0.5">&#128274;</div><span class="text-[10px] tracking-wide">BLOCKED</span>
+            </div>
+            <!-- Autonomous row -->
+            <div class="text-emerald-500/70 py-2.5 pr-2 text-right font-medium text-[11px]">Autonomous</div>
+            <div id="cell-autonomous-low" class="matrix-cell rounded-lg py-2.5 px-1 text-center bg-emerald-950/20 text-emerald-400">
+              <div class="text-sm mb-0.5">&#9889;</div><span class="text-[10px] tracking-wide">AUTO</span>
+            </div>
+            <div id="cell-autonomous-medium" class="matrix-cell rounded-lg py-2.5 px-1 text-center bg-emerald-950/20 text-emerald-400">
+              <div class="text-sm mb-0.5">&#9889;</div><span class="text-[10px] tracking-wide">AUTO</span>
+            </div>
+            <div id="cell-autonomous-high" class="matrix-cell rounded-lg py-2.5 px-1 text-center bg-emerald-950/20 text-amber-400">
+              <div class="text-sm mb-0.5">&#129309;</div><span class="text-[10px] tracking-wide">REQUEST</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Agent Stats -->
+      <div class="px-6 py-4 border-b border-slate-800/60">
+        <div class="text-sm font-medium text-slate-400 mb-3">Agent Stats</div>
+        <div class="grid grid-cols-3 gap-3">
+          <div class="bg-slate-900/60 border border-slate-800/40 rounded-lg p-3 text-center">
+            <div id="stat-approved" class="text-2xl font-bold text-emerald-400 mono">0</div>
+            <div class="text-[10px] text-slate-500 mt-1 tracking-wide uppercase">Approved</div>
+          </div>
+          <div class="bg-slate-900/60 border border-slate-800/40 rounded-lg p-3 text-center">
+            <div id="stat-rejected" class="text-2xl font-bold text-red-400 mono">0</div>
+            <div class="text-[10px] text-slate-500 mt-1 tracking-wide uppercase">Rejected</div>
+          </div>
+          <div class="bg-slate-900/60 border border-slate-800/40 rounded-lg p-3 text-center">
+            <div id="stat-decisions" class="text-2xl font-bold text-slate-300 mono">0</div>
+            <div class="text-[10px] text-slate-500 mt-1 tracking-wide uppercase">Total</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rules Panel -->
+      <div class="px-6 py-4 border-b border-slate-800/60">
+        <div class="text-sm font-medium text-slate-400 mb-3">Active Rules</div>
+        <div id="rules-panel" class="space-y-2">
+          <div class="text-xs text-slate-600 italic">No rules yet — patterns emerge from your decisions</div>
+        </div>
+      </div>
+
+      <!-- Event Log -->
+      <div class="px-6 py-4 flex-1">
+        <div class="text-sm font-medium text-slate-400 mb-3">Event Log</div>
+        <div id="event-log" class="space-y-1 text-xs mono text-slate-500 max-h-48 overflow-y-auto"></div>
+      </div>
+
+    </section>
+  </main>
+
+  <script>
+    // ── Zone Colors ──
+    const ZONE_COLORS = {
+      supervised: { color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.5)', border: 'rgba(245, 158, 11, 0.3)' },
+      guided:     { color: '#14b8a6', glow: 'rgba(20, 184, 166, 0.5)',  border: 'rgba(20, 184, 166, 0.3)' },
+      autonomous: { color: '#10b981', glow: 'rgba(16, 185, 129, 0.5)', border: 'rgba(16, 185, 129, 0.3)' },
+    };
+
+    // ── WebSocket ──
+    let ws;
+    let connected = false;
+
+    function connect() {
+      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      ws = new WebSocket(`${protocol}//${location.host}/ws`);
+
+      ws.onopen = () => {
+        connected = true;
+        logEvent('Connected to PACT server');
+      };
+
+      ws.onmessage = (e) => {
+        const msg = JSON.parse(e.data);
+        handleMessage(msg);
+      };
+
+      ws.onclose = () => {
+        connected = false;
+        logEvent('Disconnected');
+        setTimeout(connect, 2000);
+      };
+    }
+
+    function sendMsg(type, data = {}) {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type, ...data }));
+      }
+    }
+
+    // ── State ──
+    let currentState = {};
+    let previousLevel = 'supervised';
+
+    // ── Message Handlers ──
+    function handleMessage(msg) {
+      switch (msg.type) {
+        case 'state': updateState(msg); break;
+        case 'decision': showDecision(msg); break;
+        case 'auto-approved': showAutoApproved(msg); break;
+        case 'pattern': showPattern(msg); break;
+        case 'meta-decision': showMetaDecision(msg); break;
+        case 'rule-created': showRuleCreated(msg); break;
+        case 'rule-applied': showRuleApplied(msg); break;
+        case 'resolved': showResolved(msg); break;
+        case 'complete': showComplete(msg); break;
+      }
+    }
+
+    function updateState(state) {
+      currentState = state;
+      const score = state.trustScore;
+      const level = state.trustLevel;
+      const zone = ZONE_COLORS[level] || ZONE_COLORS.supervised;
+
+      // Update CSS variables
+      document.documentElement.style.setProperty('--trust-color', zone.color);
+      document.documentElement.style.setProperty('--trust-pct', score);
+      document.documentElement.style.setProperty('--zone-glow', zone.glow);
+      document.documentElement.style.setProperty('--zone-border', zone.border);
+
+      // Trust score displays
+      document.getElementById('trust-score').textContent = score;
+      document.getElementById('header-trust').textContent = score;
+
+      // Segmented gauge fills
+      updateGauge(score);
+
+      // Level badge
+      const levelBadge = document.getElementById('level-badge');
+      const headerLevel = document.getElementById('header-level');
+      const levelText = level.toUpperCase();
+
+      let levelClasses, headerClasses;
+      if (level === 'supervised') {
+        levelClasses = 'bg-amber-900/40 text-amber-400';
+        headerClasses = 'bg-amber-900/40 text-amber-400';
+      } else if (level === 'guided') {
+        levelClasses = 'bg-teal-900/40 text-teal-400';
+        headerClasses = 'bg-teal-900/40 text-teal-400';
+      } else {
+        levelClasses = 'bg-emerald-900/40 text-emerald-400';
+        headerClasses = 'bg-emerald-900/40 text-emerald-400';
+      }
+
+      levelBadge.className = `mt-2.5 inline-block text-[10px] px-3 py-1 rounded-full font-medium tracking-wider uppercase ${levelClasses}`;
+      levelBadge.textContent = levelText;
+      headerLevel.className = `text-[10px] px-2 py-0.5 rounded-full font-medium tracking-wide ${headerClasses}`;
+      headerLevel.textContent = levelText;
+
+      // Level-up animation
+      if (level !== previousLevel) {
+        levelBadge.classList.add('animate-shake');
+        setTimeout(() => levelBadge.classList.remove('animate-shake'), 500);
+        logEvent(`LEVEL UP: ${previousLevel} \u2192 ${level}`);
+        previousLevel = level;
+      }
+
+      // Stats
+      document.getElementById('stat-approved').textContent = state.approvedCount;
+      document.getElementById('stat-rejected').textContent = state.rejectedCount;
+      document.getElementById('stat-decisions').textContent = state.totalDecisions;
+
+      // Highlight active matrix cell
+      highlightMatrixCell(level, null);
+    }
+
+    function updateGauge(score) {
+      const fill1 = document.getElementById('gauge-fill-1');
+      const fill2 = document.getElementById('gauge-fill-2');
+      const fill3 = document.getElementById('gauge-fill-3');
+      const dot = document.getElementById('gauge-dot');
+
+      // Calculate fill percentages for each segment
+      if (score <= 20) {
+        fill1.style.width = (score / 20 * 100) + '%';
+        fill2.style.width = '0%';
+        fill3.style.width = '0%';
+      } else if (score <= 50) {
+        fill1.style.width = '100%';
+        fill2.style.width = ((score - 20) / 30 * 100) + '%';
+        fill3.style.width = '0%';
+      } else {
+        fill1.style.width = '100%';
+        fill2.style.width = '100%';
+        fill3.style.width = ((score - 50) / 50 * 100) + '%';
+      }
+
+      // Position dot
+      dot.style.left = score + '%';
+      const zone = score <= 20 ? ZONE_COLORS.supervised : score <= 50 ? ZONE_COLORS.guided : ZONE_COLORS.autonomous;
+      dot.style.backgroundColor = zone.color;
+      dot.style.boxShadow = `0 0 8px ${zone.color}`;
+    }
+
+    function highlightMatrixCell(trustLevel, stakes) {
+      document.querySelectorAll('.matrix-cell').forEach(el => el.classList.remove('active'));
+      if (stakes) {
+        const cell = document.getElementById(`cell-${trustLevel}-${stakes}`);
+        if (cell) cell.classList.add('active');
+      }
+    }
+
+    // ── Decision Display ──
+
+    function showDecision(msg) {
+      document.getElementById('waiting-state').classList.add('hidden');
+      const card = document.getElementById('decision-card');
+      card.classList.remove('hidden');
+
+      const urgencyColors = {
+        inform: 'border-teal-500/40 bg-teal-950/15',
+        request: 'border-amber-500/40 bg-amber-950/15',
+        blocked: 'border-red-500/40 bg-red-950/15',
+      };
+      const urgencyBadge = {
+        inform: 'bg-teal-900/40 text-teal-400',
+        request: 'bg-amber-900/40 text-amber-400',
+        blocked: 'bg-red-900/40 text-red-400',
+      };
+      const stakesBarColor = {
+        low: 'bg-slate-500',
+        medium: 'bg-amber-500',
+        high: 'bg-red-500',
+      };
+      const stakesBadge = {
+        low: 'bg-slate-800 text-slate-400',
+        medium: 'bg-amber-900/40 text-amber-400',
+        high: 'bg-red-900/40 text-red-400',
+      };
+
+      card.innerHTML = `
+        <div class="decision-card animate-slide-in flex gap-0 rounded-lg overflow-hidden border ${urgencyColors[msg.urgency]}">
+          <div class="stakes-bar ${stakesBarColor[msg.stakes]}"></div>
+          <div class="flex-1 p-4">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] px-2 py-0.5 rounded-full ${urgencyBadge[msg.urgency]} font-medium mono tracking-wide">${msg.urgency.toUpperCase()}</span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full ${stakesBadge[msg.stakes]} font-medium">${msg.stakes} stakes</span>
+              </div>
+              <span class="text-[10px] text-slate-600 mono">Step ${currentState.stepIndex}/${currentState.totalSteps}</span>
+            </div>
+            <h3 class="font-semibold text-white mb-1">${msg.title}</h3>
+            <p class="text-sm text-slate-400 mb-1">${msg.summary}</p>
+            <p class="text-[11px] text-slate-600 mono mb-3">${msg.proposedAction}</p>
+            <div class="flex gap-2">
+              <button onclick="resolve('approved')" class="flex-1 px-3 py-2 bg-emerald-700 hover:bg-emerald-600 rounded-lg text-sm font-medium transition-all hover:shadow-lg hover:shadow-emerald-700/20">
+                Approve
+              </button>
+              <button onclick="resolve('edited')" class="px-3 py-2 bg-amber-700 hover:bg-amber-600 rounded-lg text-sm font-medium transition-all hover:shadow-lg hover:shadow-amber-700/20">
+                Edit
+              </button>
+              <button onclick="resolve('rejected')" class="px-3 py-2 bg-red-700 hover:bg-red-600 rounded-lg text-sm font-medium transition-all hover:shadow-lg hover:shadow-red-700/20">
+                Reject
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      highlightMatrixCell(currentState.trustLevel, msg.stakes);
+      logEvent(`Decision surfaced: ${msg.title} [${msg.urgency}]`);
+    }
+
+    function showMetaDecision(msg) {
+      document.getElementById('waiting-state').classList.add('hidden');
+      const card = document.getElementById('decision-card');
+      card.classList.remove('hidden');
+
+      card.innerHTML = `
+        <div class="decision-card animate-slide-in border-2 border-dashed border-violet-500/50 rounded-lg overflow-hidden bg-violet-950/15 pulse-glow">
+          <div class="bg-violet-900/30 px-4 py-1.5 border-b border-violet-500/20">
+            <span class="text-[10px] text-violet-300 font-semibold tracking-[0.2em] uppercase">The Protocol Asks</span>
+          </div>
+          <div class="p-4">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-violet-900/40 text-violet-400 font-medium mono tracking-wide">META-DECISION</span>
+              <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-900/40 text-amber-400 font-medium">${msg.stakes} stakes</span>
+            </div>
+            <h3 class="font-semibold text-violet-200 mb-1">${msg.title}</h3>
+            <p class="text-sm text-slate-400 mb-1">${msg.summary}</p>
+            <p class="text-xs text-slate-500 mb-3">Should the protocol learn a new rule from your behavior?</p>
+            <div class="flex gap-2">
+              <button onclick="resolve('approved', 'Yes, auto-approve staging deploys')" class="flex-1 px-3 py-2 bg-violet-700 hover:bg-violet-600 rounded-lg text-sm font-medium transition-all hover:shadow-lg hover:shadow-violet-700/20">
+                Yes, Create Rule
+              </button>
+              <button onclick="resolve('rejected', 'No, keep reviewing')" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm font-medium transition-colors">
+                No, Keep Reviewing
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      logEvent('META-DECISION: Protocol proposes a new rule');
+    }
+
+    function showAutoApproved(msg) {
+      const prefix = msg.byRule ? '(by rule) ' : '';
+      addResolvedCard({
+        title: msg.title,
+        action: 'auto-approved',
+        stakes: msg.stakes,
+        note: msg.note,
+        byRule: msg.byRule,
+      });
+      logEvent(`Auto-approved ${prefix}${msg.title}`);
+    }
+
+    function showResolved(msg) {
+      const card = document.getElementById('decision-card');
+      card.innerHTML = `<div class="flex items-center justify-center h-16 text-slate-600 text-sm">Waiting for next decision...</div>`;
+
+      addResolvedCard({
+        title: msg.title,
+        action: msg.action,
+        note: msg.note,
+      });
+      logEvent(`Resolved: ${msg.title} \u2192 ${msg.action}`);
+    }
+
+    function addResolvedCard(data) {
+      const feed = document.getElementById('resolved-feed');
+      const actionColors = {
+        'approved': 'text-emerald-400',
+        'auto-approved': 'text-teal-400',
+        'rejected': 'text-red-400',
+        'edited': 'text-amber-400',
+      };
+      const actionIcons = {
+        'approved': '&#10003;',
+        'auto-approved': '&#9889;',
+        'rejected': '&#10007;',
+        'edited': '&#9998;',
+      };
+      const byRuleTag = data.byRule ? '<span class="ml-1 text-[10px] text-violet-400">[rule]</span>' : '';
+      const noteHtml = data.note ? `<span class="text-slate-600 ml-2 text-xs">${data.note}</span>` : '';
+      const ruleBorder = data.byRule ? 'border-l-2 border-violet-500/40' : '';
+
+      const el = document.createElement('div');
+      el.className = `animate-slide-in bg-slate-900/40 rounded px-3 py-2 text-sm flex items-center gap-2 ${ruleBorder}`;
+      el.innerHTML = `
+        <span class="${actionColors[data.action]}">${actionIcons[data.action]}</span>
+        <span class="text-slate-300 flex-1 truncate">${data.title}</span>
+        <span class="mono text-[10px] ${actionColors[data.action]}">${data.action}${byRuleTag}</span>
+        ${noteHtml}
+      `;
+      feed.insertBefore(el, feed.firstChild);
+    }
+
+    function showPattern(msg) {
+      const scopeStr = Object.entries(msg.scope).map(([k,v]) => `${k}=${v}`).join(', ');
+      const el = document.createElement('div');
+      el.className = 'animate-slide-in bg-violet-950/25 border border-violet-500/25 rounded-lg px-3 py-2 text-sm';
+      el.innerHTML = `
+        <div class="flex items-center gap-2 text-violet-400 font-medium">
+          <span>&#128270;</span> Pattern Detected
+        </div>
+        <div class="text-xs text-slate-400 mt-1">Scope: { ${scopeStr} }</div>
+        <div class="text-xs text-slate-500">${msg.evidence.approved}/${msg.evidence.total} approved \u2014 suggesting auto-approve</div>
+      `;
+      document.getElementById('resolved-feed').insertBefore(el, document.getElementById('resolved-feed').firstChild);
+      logEvent(`Pattern detected: ${scopeStr} (${msg.evidence.approved}/${msg.evidence.total} approved)`);
+    }
+
+    function showRuleCreated(msg) {
+      const scopeStr = Object.entries(msg.scope).map(([k,v]) => `${k}=${v}`).join(', ');
+      const panel = document.getElementById('rules-panel');
+      panel.innerHTML = '';
+      const el = document.createElement('div');
+      el.className = 'animate-glow-in bg-violet-950/25 border border-violet-500/25 rounded-lg px-3 py-2';
+      el.innerHTML = `
+        <div class="flex items-center gap-2">
+          <span class="text-violet-400">&#9889;</span>
+          <span class="text-sm font-medium text-violet-300">Auto-approve</span>
+        </div>
+        <div class="text-xs text-slate-400 mono mt-1">{ ${scopeStr} }</div>
+      `;
+      panel.appendChild(el);
+      logEvent(`Rule created: auto-approve { ${scopeStr} }`);
+    }
+
+    function showRuleApplied(msg) {
+      logEvent(`Rule applied: ${msg.title} \u2192 auto-approved by rule`);
+    }
+
+    function showComplete(msg) {
+      const card = document.getElementById('decision-card');
+      const zone = ZONE_COLORS[msg.trustLevel] || ZONE_COLORS.supervised;
+      card.innerHTML = `
+        <div class="animate-slide-in border border-teal-500/40 rounded-lg p-6 bg-teal-950/15 text-center">
+          <div class="text-2xl mb-2">&#10004;</div>
+          <h3 class="font-semibold text-teal-200 mb-2">Demo Complete</h3>
+          <p class="text-sm text-slate-400 mb-1">Final trust: <span class="mono font-bold" style="color: ${zone.color}">${msg.trustScore}</span> (${msg.trustLevel})</p>
+          <p class="text-sm text-slate-400">
+            ${msg.approvedCount} approved &middot; ${msg.rejectedCount} rejected &middot; ${msg.totalDecisions} total
+          </p>
+          <p class="text-xs text-slate-600 mt-3">The agent earned autonomy for routine deploys.<br>Production stays human-in-the-loop.</p>
+          <button onclick="resetDemo()" class="mt-4 px-4 py-2 bg-teal-700 hover:bg-teal-600 rounded-lg text-sm font-medium transition-all hover:shadow-lg hover:shadow-teal-700/20">
+            Run Again
+          </button>
+        </div>
+      `;
+      document.querySelectorAll('.matrix-cell').forEach(el => el.classList.remove('active'));
+      logEvent('Demo complete');
+    }
+
+    // ── Event Log ──
+    function logEvent(text) {
+      const log = document.getElementById('event-log');
+      const el = document.createElement('div');
+      const time = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      el.textContent = `[${time}] ${text}`;
+      log.appendChild(el);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    // ── Actions ──
+    function startDemo() {
+      sendMsg('start');
+      document.getElementById('btn-start').classList.add('hidden');
+      document.getElementById('waiting-state').innerHTML = '<div class="text-slate-600 text-sm">Starting scenario...</div>';
+      logEvent('Demo started');
+    }
+
+    function resetDemo() {
+      sendMsg('reset');
+      document.getElementById('btn-start').classList.remove('hidden');
+      document.getElementById('decision-card').classList.add('hidden');
+      document.getElementById('decision-card').innerHTML = '';
+      document.getElementById('waiting-state').classList.remove('hidden');
+      document.getElementById('waiting-state').innerHTML = 'Press <span class="mono mx-1 px-2 py-0.5 bg-slate-800 rounded text-slate-400">Start Demo</span> to begin';
+      document.getElementById('resolved-feed').innerHTML = '';
+      document.getElementById('rules-panel').innerHTML = '<div class="text-xs text-slate-600 italic">No rules yet \u2014 patterns emerge from your decisions</div>';
+      document.getElementById('event-log').innerHTML = '';
+      previousLevel = 'supervised';
+
+      // Reset gauge
+      document.getElementById('gauge-fill-1').style.width = '50%';
+      document.getElementById('gauge-fill-2').style.width = '0%';
+      document.getElementById('gauge-fill-3').style.width = '0%';
+      document.getElementById('gauge-dot').style.left = '10%';
+      document.getElementById('gauge-dot').style.backgroundColor = '#f59e0b';
+      document.getElementById('gauge-dot').style.boxShadow = '0 0 8px #f59e0b';
+
+      // Reset CSS variables
+      document.documentElement.style.setProperty('--trust-color', '#f59e0b');
+      document.documentElement.style.setProperty('--trust-pct', 10);
+      document.documentElement.style.setProperty('--zone-glow', 'rgba(245, 158, 11, 0.5)');
+      document.documentElement.style.setProperty('--zone-border', 'rgba(245, 158, 11, 0.3)');
+
+      logEvent('Demo reset');
+    }
+
+    function resolve(action, note) {
+      sendMsg('resolve', { action, note });
+    }
+
+    // ── Init ──
+    connect();
+  </script>
+</body>
+</html>

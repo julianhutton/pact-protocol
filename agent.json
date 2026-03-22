@@ -1,0 +1,108 @@
+{
+  "$schema": "https://devspot.ai/schemas/agent.json",
+  "name": "PACT",
+  "description": "Protocol for Agent-human Collaborative Trust. A lightweight TypeScript protocol that lets AI agents earn autonomy through human feedback, with trust attestations recorded onchain on Base. Agents surface decisions based on a stakes x trust classification matrix, learn from human responses, detect patterns, and create auto-approve rules over time.",
+  "version": "0.1.0",
+  "author": "Julian Hutton",
+  "repository": "https://github.com/julianhutton/pact-protocol",
+  "license": "MIT",
+  "track": "Agents With Receipts — ERC-8004",
+  "harness": "claude-code",
+  "model": "claude-opus-4-6",
+  "chain": {
+    "name": "Base",
+    "chainId": 8453,
+    "network": "mainnet"
+  },
+  "contracts": {
+    "TrustAttestation": {
+      "address": "0x6c867dd49a3fc66b9c487d03bafb05210ed15e52",
+      "description": "Records approval/rejection attestations with trust scores. Any agent can call verifyTrust(agentId, minScore) to check another agent's track record.",
+      "explorer": "https://basescan.org/address/0x6c867dd49a3fc66b9c487d03bafb05210ed15e52"
+    },
+    "AgentRegistry": {
+      "address": "0x0a1485ac5079a505ac9843f28d7c269a4b37a548",
+      "description": "Onchain agent identity. Agents register with a name and description, queryable by any other agent.",
+      "explorer": "https://basescan.org/address/0x0a1485ac5079a505ac9843f28d7c269a4b37a548"
+    }
+  },
+  "erc8004": {
+    "supported": true,
+    "receiptContracts": [
+      "0x6c867dd49a3fc66b9c487d03bafb05210ed15e52",
+      "0x0a1485ac5079a505ac9843f28d7c269a4b37a548"
+    ]
+  },
+  "techStack": [
+    "TypeScript",
+    "Solidity",
+    "Bun",
+    "Viem",
+    "Hardhat",
+    "Vitest",
+    "tsup",
+    "Base (L2)"
+  ],
+  "tools": [
+    {
+      "name": "trust-classification",
+      "description": "Classifies agent decisions using a stakes x trust matrix to determine autonomy level (auto-approve, inform, request, blocked)"
+    },
+    {
+      "name": "trust-scoring",
+      "description": "Updates agent trust scores based on human feedback: approved (+2), edited (+1), rejected (-5)"
+    },
+    {
+      "name": "pattern-detection",
+      "description": "Detects repeated approval patterns and surfaces meta-decisions to auto-approve similar future actions"
+    },
+    {
+      "name": "onchain-attestation",
+      "description": "Records trust attestations onchain on Base via the TrustAttestation contract"
+    },
+    {
+      "name": "agent-registry",
+      "description": "Registers and queries agent identities onchain via the AgentRegistry contract"
+    },
+    {
+      "name": "trust-verification",
+      "description": "Permissionless onchain verification of any agent's trust score by other agents"
+    }
+  ],
+  "taskCategories": [
+    "human-in-the-loop decision routing",
+    "trust-based autonomy management",
+    "onchain trust attestation",
+    "agent identity registration",
+    "cross-agent trust verification",
+    "pattern-based rule learning",
+    "multi-agent trust delegation"
+  ],
+  "examples": [
+    {
+      "name": "quickstart",
+      "description": "Full lifecycle in ~50 lines: surface, classify, resolve, learn",
+      "command": "bun run --filter pact-protocol example:quickstart"
+    },
+    {
+      "name": "deploy-approval",
+      "description": "CI/CD agent earning trust over production deploys with pattern detection",
+      "command": "bun run --filter pact-protocol example:deploy"
+    },
+    {
+      "name": "multi-agent-trust",
+      "description": "Orchestrator ranks worker agents by trust, delegates high-stakes tasks",
+      "command": "bun run --filter pact-protocol example:multi-agent"
+    },
+    {
+      "name": "trading-agent",
+      "description": "Trading agent with risk thresholds and learned auto-approve rules",
+      "command": "bun run --filter pact-protocol example:trading"
+    }
+  ],
+  "tests": {
+    "protocol": "bun run --filter pact-protocol test",
+    "onchain": "bun run --filter pact-onchain test",
+    "total": 43
+  }
+}
