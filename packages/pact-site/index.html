@@ -374,12 +374,21 @@
       50% { opacity: 0.4; }
     }
 
+    /* ── Badge row ── */
+    .badge-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 28px;
+      flex-wrap: wrap;
+    }
+    .badge-row .onchain-badge { margin-top: 0; padding: 8px 14px; }
+
     /* ── Install snippet ── */
     .install-snippet {
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      margin-top: 12px;
       padding: 8px 14px;
       background: var(--terminal-bg);
       border-radius: var(--radius-sm);
@@ -513,16 +522,18 @@
         AI agents start supervised, earn autonomy through repeated human approval,
         and always escalate where it matters most.
       </p>
-      <a class="onchain-badge" href="https://basescan.org/address/0x6c867dd49a3fc66b9c487d03bafb05210ed15e52" target="_blank">
-        <span class="onchain-dot"></span>
-        Live on Base
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
-      </a>
-      <div class="install-snippet">
-        <code>npm install pact-protocol</code>
-        <button class="copy-btn" onclick="navigator.clipboard.writeText('npm install pact-protocol');this.innerHTML='✓';setTimeout(()=>{this.innerHTML='<svg width=&quot;14&quot; height=&quot;14&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot;><rect x=&quot;9&quot; y=&quot;9&quot; width=&quot;13&quot; height=&quot;13&quot; rx=&quot;2&quot;/><path d=&quot;M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1&quot;/></svg>'},1500)" aria-label="Copy to clipboard">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-        </button>
+      <div class="badge-row">
+        <div class="install-snippet">
+          <code>npm install pact-protocol</code>
+          <button class="copy-btn" onclick="navigator.clipboard.writeText('npm install pact-protocol');this.innerHTML='✓';setTimeout(()=>{this.innerHTML='<svg width=&quot;14&quot; height=&quot;14&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot;><rect x=&quot;9&quot; y=&quot;9&quot; width=&quot;13&quot; height=&quot;13&quot; rx=&quot;2&quot;/><path d=&quot;M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1&quot;/></svg>'},1500)" aria-label="Copy to clipboard">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          </button>
+        </div>
+        <a class="onchain-badge" href="https://basescan.org/address/0x6c867dd49a3fc66b9c487d03bafb05210ed15e52" target="_blank">
+          <span class="onchain-dot"></span>
+          Live on Base
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H7M17 7v10"/></svg>
+        </a>
       </div>
     </div>
 
