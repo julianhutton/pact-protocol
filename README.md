@@ -11,6 +11,7 @@
     <a href="./pact.md"><img src="https://img.shields.io/badge/spec-v0.1-green" alt="Spec v0.1"></a>
     <img src="https://img.shields.io/badge/tests-43_passing-brightgreen" alt="43 tests passing">
     <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License"></a>
+    <a href="https://www.npmjs.com/package/pact-protocol"><img src="https://img.shields.io/npm/v/pact-protocol" alt="npm"></a>
   </p>
 </p>
 
@@ -66,7 +67,35 @@ When the same type of decision is approved repeatedly, PACT surfaces a **meta-de
 
 > Network: **Base Mainnet** (Chain ID 8453)
 
-## Quick start
+## Install
+
+```bash
+npm install pact-protocol
+```
+
+```typescript
+import { Pact } from "pact-protocol";
+
+const protocol = new Pact({ defaultTrustScore: 40 });
+
+const decision = protocol.surface({
+  agentId: "my-agent",
+  title: "Send weekly report",
+  summary: "1,204 subscribers will receive it.",
+  proposedAction: "Send via SendGrid",
+  scope: { category: "email" },
+  stakes: "medium",
+  confidence: 0.9,
+});
+
+const resolved = protocol.resolve({
+  decisionId: decision.id,
+  action: "approved",
+  note: "Looks good",
+});
+```
+
+## Development
 
 ```bash
 # Install dependencies
